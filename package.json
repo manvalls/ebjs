@@ -1,0 +1,21 @@
+{
+  "name": "ebjs",
+  "version": "0.0.0",
+  "description": "Extensible binary javascript serialization",
+  "main": "main.js",
+  "dependencies": {
+    "vz.property": "",
+    "vz.next-tick": "",
+    "vz.resolve": "",
+    "vz.stepper": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/manvalls/ebjs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/manvalls/ebjs/issues"
+  },
+  "author": "Manuel Valls Fernández <manolo@chatiku.com>",
+  "license": "LGPL-3.0"
+}
