@@ -34,7 +34,7 @@ if(Buffer) exports.toBuffer = function(data,base64){
     case Float32Array:
     case Float64Array:
     case DataView:
-      data = data.buffer;
+      data = data.buffer.slice(data.byteOffset,data.length);
     case ArrayBuffer:
       return new Buffer(new Uint8Array(data));
     case Buffer:
