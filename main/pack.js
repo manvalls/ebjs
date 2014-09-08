@@ -42,8 +42,8 @@ pack = function(args,v){
       if(args.length == 1){
         v.data = constructor;
         
-        v.i = com.label.of(v.data).get();
-        if(v.i != null && com.packers[v.i] == null){
+        v.i = com.uLabel.of(v.data).get();
+        if(v.i != null){
           if(this.pack(Number,v.i,this.goTo('end',pack,v)) != resolve.deferred) this.end();
           return;
         }

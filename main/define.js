@@ -2,8 +2,6 @@
 var com = require('./common.js');
 
 module.exports = function(constructor,label,types,packer,unpacker){
-	if(com.label.of(constructor).value != null) throw 'Already defined';
-  
 	if(typeof label != 'number'){
 		unpacker = packer;
 		packer = types;
@@ -17,31 +15,18 @@ module.exports = function(constructor,label,types,packer,unpacker){
 		types = undefined;
 	}
 	
+  if(packer?com.label.of(constructor).get():com.uLabel.of(constructor).get())
+  throw 'Already defined';
+  
 	if(label != null){
-		var backup;
-		
-		if(com.classes[label]) backup = [
-      com.classes[label],
-      com.types[label],
-      com.packers[label],
-      com.unpackers[label]
-    ];
+		if(com.classes[label]) throw 'Label in use';
 		
 		com.classes[label] = constructor;
 		com.types[label] = types;
 		com.packers[label] = packer;
 		com.unpackers[label] = unpacker;
 		
-		if(backup){
-			com.label.of(backup[0]).value = com.classes.length;
-      
-			com.classes.push(backup[0]);
-			com.types.push(backup[1]);
-			com.packers.push(backup[2]);
-			com.unpackers.push(backup[3]);
-		}
-		
-		return com.label.of(constructor).value = label;
+		return packer?com.label.of(constructor).set(label):com.uLabel.of(constructor).set(label);
 	}
 	
 	com.classes.push(constructor);
@@ -49,6 +34,6 @@ module.exports = function(constructor,label,types,packer,unpacker){
 	com.packers.push(packer);
 	com.unpackers.push(unpacker);
 	
-	return com.label.of(constructor).value = com.classes.length - 1;
+	return packer?com.label.of(constructor).set(com.classes.length - 1):com.uLabel.of(constructor).set(com.classes.length - 1);
 }
 
