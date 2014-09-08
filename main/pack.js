@@ -18,6 +18,8 @@ var com = require('./common.js'),
     
     pack,
     onEnd,
+    toData,
+    giver,
     
     onFRLoad;
 
@@ -91,13 +93,28 @@ Object.defineProperty(WriteBuffer.prototype,'pack',{value: function(constructor,
   return resolve(com.resFunction,[callback,this.goTo('start',pack),args,this],com.resCallback);
 }});
 
-if(Blob) Object.defineProperty(WriteBuffer.prototype,'write',{value: function(data,callback){
-  buffer.of(this).get().push(data);
-}});
-else Object.defineProperty(WriteBuffer.prototype,'write',{value: function(data,callback){
-  var buff = com.toBuffer(data);
+if(Blob){
   
-  if(buff) buffer.of(this).get().push(buff);
+  giver = function(data){
+    this.give(data);
+  };
+  
+  Object.defineProperty(WriteBuffer.prototype,'write',{value: function(data,callback){
+    var trg = target.of(this).get();
+    
+    if(trg && trg.give) toData(data instanceof Blob?data:new Blob([data]),type.of(this).get(),giver,trg);
+    else buffer.of(this).get().push(data);
+  }});
+  
+}else Object.defineProperty(WriteBuffer.prototype,'write',{value: function(data,callback){
+  var buff = com.toBuffer(data),trg = target.of(this).get();
+  
+  if(buff){
+    if(trg){
+      if(trg.write) trg.write(toData(buff,type.of(this).get()));
+      else trg.give(toData(buff,type.of(this).get()));
+    }else buffer.of(this).get().push(buff);
+  }
 }});
 
 Object.defineProperty(WriteBuffer.prototype,'end',{value: function(){
@@ -119,16 +136,10 @@ if(Blob){
     this.cb.call(this.that,data);
   };
   
-  onEnd = function(){
-    var fr,cb,t,that,res;
+  toData = function(data,type,callback,that){
+    var fr;
     
-    cb = callback.of(this).get();
-    t = type.of(this).get();
-    that = thisArg.of(this).get();
-    
-    if(t) t = t.toLowerCase();
-    
-    switch(t){
+    switch(type.toLowerCase()){
       case 'base64':
         fr = new FileReader();
         fr.base64 = true;
@@ -136,52 +147,60 @@ if(Blob){
         fr = fr || new FileReader();
         
         fr.onload = onFRLoad;
-        fr.cb = cb;
+        fr.cb = callback;
         fr.that = that;
-        fr.readAsDataURL(new Blob(buffer.of(this).value));
+        fr.readAsDataURL(data);
         break;
       case 'arraybuffer': {
         fr = new FileReader();
         
         fr.onload = onFRLoad;
-        fr.cb = cb;
+        fr.cb = callback;
         fr.that = that;
-        fr.readAsArrayBuffer(new Blob(buffer.of(this).value));
+        fr.readAsArrayBuffer(data);
       } break;
       default:
-        nextTick(cb,[new Blob(buffer.of(this).value)],that);
+        nextTick(cb,[data],that);
     }
     
   };
   
-}else onEnd = function(){
-  var fr,cb,t,that,buff,result;
-
-  cb = callback.of(this).get();
-  t = type.of(this).get();
-  that = thisArg.of(this).get();
+  onEnd = function(){
+    var fr,cb,t,that,res,trg;
+    
+    cb = callback.of(this).get();
+    t = type.of(this).get();
+    that = thisArg.of(this).get();
+    trg = target.of(this).get();
+    
+    if(trg) nextTick(cb,trg,that);
+    else toData(new Blob(buffer.of(this).value),t,cb,that);
+  };
   
-  if(t) t = t.toLowerCase();
+}else{
   
-  buff = Buffer.concat(buffer.of(this).value);
+  toData = function(buff,type){
+    
+    switch(type.toLowerCase()){
+      case 'base64': return buff.toString('base64');
+      case 'dataurl': return 'data:;base64,' + buff.toString('base64');
+      case 'arraybuffer': return (new Uint8Array(buff)).buffer;
+      default: return buff;
+    }
+    
+  };
   
-  switch(t){
-    case 'base64': {
-      result = buff.toString('base64');
-      } break;
-    case 'dataurl': {
-      result = 'data:;base64,' + buff.toString('base64');
-      } break;
-    case 'arraybuffer': {
-      result = (new Uint8Array(buff)).buffer;
-    } break;
-    default: {
-      result = buff;
-    } break;
-  }
+  onEnd = function(){
+    var fr,cb,t,that,buff,result;
   
-  nextTick(cb,[result],that);
-};
+    cb = callback.of(this).get();
+    t = type.of(this).get();
+    that = thisArg.of(this).get();
+    
+    nextTick(cb,[toData(Buffer.concat(buffer.of(this).value),t)],that);
+  };
+  
+}
 
 module.exports = function(data,cb,that,t,tar){
   var b = new WriteBuffer(),res;

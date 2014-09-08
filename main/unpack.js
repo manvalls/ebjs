@@ -26,7 +26,6 @@ var nextTick = require('vz.next-tick'),
     onData,
     onEnd,
     unpack,
-    toArray, // browser line
     
     Buffer = global.Buffer, // nodejs line
     Blob = global.Blob, // browser line
@@ -51,42 +50,8 @@ if(Buffer){ // nodejs block
   
 }else{ // browser block
   
-  toArray = function(data){
-    var view;
-    
-    switch(data.constructor){
-      case String:
-        i = data.indexOf('base64,');
-        if(i != -1) data = data.substring(i + 7);
-        
-        data = atob(data);
-        view = new Uint8Array(data.length);
-        
-        for(i = 0;i < data.length;i++){
-          view[i] = data.charCodeAt(i);
-        }
-        
-        return view;
-      case Uint8Array:
-      case Uint8ClampedArray:
-        return data;
-      case Uint16Array:
-      case Uint32Array:
-      case Int16Array:
-      case Int32Array:
-      case Int8Array:
-      case Float32Array:
-      case Float64Array:
-      case DataView:
-        data = data.buffer.slice(data.byteOffset,data.length);
-      case ArrayBuffer:
-        return new Uint8Array(data);
-    }
-    
-  };
-  
   ReadBuffer = function(data,allowBlobs){
-    var arr = toArray(data);
+    var arr = com.toArray(data);
     
     com.resolvers.of(this).set([]);
     
@@ -155,7 +120,7 @@ if(Buffer){ // nodejs block
 }else{ // browser block
   
   onData = function(data){
-    var arr = toArray(data),
+    var arr = com.toArray(data),
         bp = blobPool.of(this).get(),
         p = pool.of(this).get(),
         n = currentBytes.of(that).get(),
