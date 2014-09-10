@@ -11,6 +11,9 @@ var com = require('./common.js'),
     
     buffer = new Property(),
     
+    giverCB = new Property(),
+    giverThat = new Property(),
+    
     type = new Property(),
     callback = new Property(),
     thisArg = new Property(),
@@ -97,13 +100,18 @@ if(Blob){
   
   giver = function(data){
     this.give(data);
+    giverCB.get(this).call(giverThat.get(this));
   };
   
   Object.defineProperty(WriteBuffer.prototype,'write',{value: function(data,callback){
     var trg = target.of(this).get();
     
-    if(trg && trg.give) toData(data instanceof Blob?data:new Blob([data]),type.of(this).get(),giver,trg);
-    else buffer.of(this).get().push(data);
+    if(trg && trg.give){
+      giverCB.set(trg,callback);
+      giverThat.set(trg,this);
+      toData(data instanceof Blob?data:new Blob([data]),type.of(this).get(),giver,trg);
+      return resolve.deferred;
+    }else buffer.of(this).get().push(data);
   }});
   
 }else Object.defineProperty(WriteBuffer.prototype,'write',{value: function(data,callback){
@@ -139,6 +147,8 @@ if(Blob){
   toData = function(data,type,callback,that){
     var fr;
     
+    type = type || '';
+    
     switch(type.toLowerCase()){
       case 'base64':
         fr = new FileReader();
@@ -160,7 +170,7 @@ if(Blob){
         fr.readAsArrayBuffer(data);
       } break;
       default:
-        nextTick(cb,[data],that);
+        nextTick(callback,[data],that);
     }
     
   };
@@ -173,13 +183,14 @@ if(Blob){
     that = thisArg.of(this).get();
     trg = target.of(this).get();
     
-    if(trg) nextTick(cb,trg,that);
+    if(trg) cb.call(that,trg);
     else toData(new Blob(buffer.of(this).value),t,cb,that);
   };
   
 }else{
   
   toData = function(buff,type){
+    type = type || '';
     
     switch(type.toLowerCase()){
       case 'base64': return buff.toString('base64');
@@ -197,7 +208,7 @@ if(Blob){
     t = type.of(this).get();
     that = thisArg.of(this).get();
     
-    nextTick(cb,[toData(Buffer.concat(buffer.of(this).value),t)],that);
+    cb.call(that,toData(Buffer.concat(buffer.of(this).value),t));
   };
   
 }
@@ -217,6 +228,6 @@ module.exports = function(data,cb,that,t,tar){
   target.of(b).set(tar);
   
   res = b.pack(data,onEnd);
-  if(res != resolve.deferred) onEnd.call(b);
+  if(res != resolve.deferred) nextTick(onEnd,[],b);
 };
 

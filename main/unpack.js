@@ -197,13 +197,13 @@ if(Buffer){ // nodejs block
     bytes.set(p);
     bytes.set(view,p.length);
     
-    pool.of(that).set(bytes.slice(n));
+    pool.of(that).set(bytes.subarray(n));
     blobPool.of(that).set(bp.slice(n));
     
     currentBytes.of(that).set(undefined);
     currentReadOp.of(that).set(undefined);
     
-    op.resolve(bytes.slice(0,n));
+    op.resolve(bytes.subarray(0,n));
   };
   
   bpToPool = function(that,n){
@@ -226,7 +226,7 @@ if(Buffer){ // nodejs block
         p = pool.of(that).get(),
         bp = blobPool.of(that).get();
     
-    if(currentReadOp.of(that).get() || currentBlobReadOp.(that).get())
+    if(currentReadOp.of(that).get() || currentBlobReadOp.of(that).get())
     throw 'Only one read operation at a time';
     
     this.blob = false;
@@ -256,7 +256,7 @@ if(Buffer){ // nodejs block
         p = pool.of(that).get(),
         bp = blobPool.of(that).get();
     
-    if(currentReadOp.of(that).get() || currentBlobReadOp.(that).get())
+    if(currentReadOp.of(that).get() || currentBlobReadOp.of(that).get())
     throw 'Only one read operation at a time';
     
     if(!bp){
@@ -315,7 +315,7 @@ unpack = function(args,v){
       if(!com.types[v.i]) return this.goTo('start',com.unpackers[v.i])();
       
       v.arr = [];
-      v.types = com.types[v.i].splice();
+      v.types = com.types[v.i].slice();
     
     case 'unpack-type':
       
