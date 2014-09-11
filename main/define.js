@@ -37,3 +37,4 @@ module.exports = function(constructor,label,types,packer,unpacker){
 	return packer?com.label.of(constructor).set(com.classes.length - 1):com.uLabel.of(constructor).set(com.classes.length - 1);
 }
 
+module.exports({},0); // Back Reference

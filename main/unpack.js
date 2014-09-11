@@ -27,6 +27,9 @@ var nextTick = require('vz.next-tick'),
     onEnd,
     unpack,
     
+    brPool = new Property(),
+    brFlags = new Property(),
+    
     Buffer = global.Buffer, // nodejs line
     Blob = global.Blob, // browser line
     
@@ -37,6 +40,8 @@ if(Buffer){ // nodejs block
   ReadBuffer = function(data){
     var buff = com.toBuffer(data,true);
     
+    brPool.set(this,[]);
+    brFlags.set(this,[]);
     com.resolvers.of(this).set([]);
     
     if(buff) pool.of(this).set(buff);
@@ -53,6 +58,8 @@ if(Buffer){ // nodejs block
   ReadBuffer = function(data,allowBlobs){
     var arr = com.toArray(data);
     
+    brPool.set(this,[]);
+    brFlags.set(this,[]);
     com.resolvers.of(this).set([]);
     
     if(arr){
@@ -299,6 +306,7 @@ unpack = function(args,v){
       constructor = args[0];
       
       if(!args.length){
+        v.setFlag = true;
         v.i = this.unpack(Number,this.goTo('unpack',unpack,v));
         if(v.i == resolve.deferred) return;
       }else v.i = com.label.of(constructor).get();
@@ -306,6 +314,14 @@ unpack = function(args,v){
     case 'unpack':
       
       if(v.i == resolve.deferred) v.i = args[0];
+      
+      if(v.i == 0){
+        brFlags.get(this).push(false);
+        v.brTag = this.unpack(Number,this.goTo('br-tag',unpack,v));
+        if(v.brTag == resolve.deferred) return;
+        return this.end(brPool.get(this)[v.brTag]);
+      }else if(v.setFlag) brFlags.get(this).push(true);
+      else brFlags.get(this).push(false);
       
       if(!com.unpackers[v.i]){
         this.end(com.classes[v.i]);
@@ -328,6 +344,10 @@ unpack = function(args,v){
       }
       
       this.end(com.unpackers[v.i].apply(this,v.arr));
+      break;
+      
+    case 'br-tag':
+      this.end(brPool.get(this)[args[0]]);
   }
   
 };
@@ -345,6 +365,7 @@ Object.defineProperty(ReadBuffer.prototype,'unpack',{value: function(constructor
 }});
 
 Object.defineProperty(ReadBuffer.prototype,'end',{value: function(data){
+  if(brFlags.get(this).pop()) brPool.get(this).push(data);
   com.resolvers.of(this).get().pop().resolve(data);
 }});
 

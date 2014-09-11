@@ -19,6 +19,9 @@ var com = require('./common.js'),
     thisArg = new Property(),
     target = new Property(),
     
+    brTagProp = new Property(),
+    nextBrTag = new Property(),
+    
     pack,
     onEnd,
     toData,
@@ -29,6 +32,8 @@ var com = require('./common.js'),
 function WriteBuffer(){
   com.resolvers.of(this).set([]);
   buffer.of(this).set([]);
+  nextBrTag.of(this).set(0);
+  brTagProp.of(this).set(new Property());
 }
 
 WriteBuffer.prototype = new Stepper();
@@ -49,9 +54,17 @@ pack = function(args,v){
         
         v.i = com.uLabel.of(v.data).get();
         if(v.i != null){
-          if(this.pack(Number,v.i,this.goTo('end',pack,v)) != resolve.deferred) this.end();
+          if(this.pack(Number,v.i,this.goTo('end',pack,v)) !== resolve.deferred) this.end();
           return;
         }
+        
+        v.brTag = brTagProp.get(this).get(v.data);
+        
+        if(v.brTag != null){
+          if(this.pack(Number,0,this.goTo('br-tag',pack,v)) === resolve.deferred) return;
+          if(this.pack(Number,v.brTag,this.goTo('end',pack,v)) === resolve.deferred) return;
+          return this.end();
+        }else brTagProp.get(this).set(v.data,nextBrTag.of(this).value++);
         
         constructor = v.data.constructor;
         
@@ -61,7 +74,7 @@ pack = function(args,v){
           constructor = proto.constructor;
         }
         
-        if(this.pack(Number,v.i,this.goTo('pack',pack,v)) == resolve.deferred) return;
+        if(this.pack(Number,v.i,this.goTo('pack',pack,v)) === resolve.deferred) return;
       }else if((v.i = com.label.of(constructor).get()) == null) throw new TypeError('Unsupported type "' + constructor.name + '"');
       
     case 'pack':
@@ -75,11 +88,16 @@ pack = function(args,v){
       
       while(type = v.types.shift()){
         elem = v.arr.shift();
-        if(this.pack(type,elem,this.goTo('pack-type',pack,v)) == resolve.deferred) return;
+        if(this.pack(type,elem,this.goTo('pack-type',pack,v)) === resolve.deferred) return;
       }
       
     case 'end':
       this.end();
+      break;
+    
+    case 'br-tag':
+      if(this.pack(Number,v.brTag,this.goTo('end',pack,v)) === resolve.deferred) return;
+      return this.end();
     
   }
   
@@ -228,6 +246,6 @@ module.exports = function(data,cb,that,t,tar){
   target.of(b).set(tar);
   
   res = b.pack(data,onEnd);
-  if(res != resolve.deferred) nextTick(onEnd,[],b);
+  if(res !== resolve.deferred) nextTick(onEnd,[],b);
 };
 
