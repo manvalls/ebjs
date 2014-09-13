@@ -354,14 +354,21 @@ unpack = function(args,v){
 
 
 Object.defineProperty(ReadBuffer.prototype,'unpack',{value: function(constructor,callback){
-  var args;
+  var args,flags;
   
   if(!callback){
+    flags = brFlags.get(this);
+    if(flags[flags.length - 1] === true) throw 'To use generic chained unpack calls you must call ReadBuffer.start first';
     args = [];
     callback = constructor;
   }else args = [constructor];
   
   return resolve(com.resFunction,[callback,this.goTo('start',unpack),args,this],com.resCallback);
+}});
+
+Object.defineProperty(ReadBuffer.prototype,'start',{value: function(data){
+  if(brFlags.get(this).pop()) brPool.get(this).push(data);
+  brFlags.get(this).push(false);
 }});
 
 Object.defineProperty(ReadBuffer.prototype,'end',{value: function(data){
