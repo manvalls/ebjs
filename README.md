@@ -13,7 +13,6 @@ This package is a tool which helps you define how your data is stored and transm
 Once you've included definitions for the types you want, you can simply use *ebjs.pack* and *ebjs.unpack*:
 
 ```javascript
-
 var ebjs = require('ebjs');
 require('ebjs.basic');
 
@@ -22,7 +21,6 @@ ebjs.pack({foo: 'bar'},function(buffer){
     console.log(data);
   });
 });
-
 ```
 
 ## Defining new types
