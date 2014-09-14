@@ -34,13 +34,17 @@ When defining a new type you may omit the label, but it's highly discouraged, an
 
 ### High level definitions
 
-TODO
+*This section is being written, please wait or write it yourself*
 
 ### Low level definitions
 
-TODO
+*This section is being written, please wait or write it yourself*
+
+### Constants
+
+*This section is being written, please wait or write it yourself*
 
 ## Reference
 
-TODO
+*This section is being written, please wait or write it yourself*
 
