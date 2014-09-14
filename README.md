@@ -32,11 +32,11 @@ Types are identified by an unsigned integer called *label*. Every type you defin
 
 When defining a new type you may omit the label, but it's highly discouraged, and if you do, make sure to include all labeled definitions before the unlabeled ones, as unlabeled definitions will be assigned the next free label. This being said, there are two different ways for defining a new type: the sync, high level one, and the low level one.
 
-### High definitions
+### High level definitions
 
 TODO
 
-### Low definitions
+### Low level definitions
 
 TODO
 
