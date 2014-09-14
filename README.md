@@ -25,7 +25,7 @@ ebjs.pack({foo: 'bar'},function(buffer){
 
 ## Defining new types
 
-Types are identified by an unsigned integer called *label*. Every type you define has an associated label, either declared by you or implicitly assigned by the library. You may use any label you want for your definitions, but for interoperability's sake labels from 0 to 100 are to be considered reserved. Its intended ussage is as follows, and will be updated when new ones are assigned:
+Types are identified by an unsigned integer called *label*. Every type you define has an associated label, either declared by you or implicitly assigned by the library. You may use any label you want for your definitions, but for interoperability's sake labels from 0 to 100 are to be considered reserved. Its intended usage is as follows, and will be updated when new ones are assigned:
 
 - \[0\] Circular references
 - \[1-10\] *basic* group ([ebjs.basic](https://www.npmjs.org/package/ebjs.basic "ebjs.basic"))
