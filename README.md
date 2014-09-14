@@ -18,7 +18,7 @@ require('ebjs.basic');
 
 ebjs.pack({foo: 'bar'},function(buffer){
   ebjs.unpack(buffer,function(data){
-    console.log(data);
+    console.log(data); // {foo: 'bar'}
   });
 });
 ```
