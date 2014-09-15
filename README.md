@@ -34,7 +34,33 @@ When defining a new type you may omit the label, but it's highly discouraged, an
 
 ### High level definitions
 
-*This section is being written, please wait or write it yourself*
+These definitions are constructed on top of other ones previously defined in a synchronous way. As an example, take the following type:
+
+```javascript
+function Person(name,gender,age){
+  this.name = name + '';
+  this.gender = gender + '';
+  this.age = parseInt(age);
+}
+```
+
+Here, the *Person* type includes three properties: *name*, a string; *gender*, either 'male' or 'female', and age, a Number. We could define it in the following way:
+
+```javascript
+var ebjs = require('ebjs');
+
+ebjs.define(Person,200,[String,Number,Number],function(person){
+  return [
+    person.name,
+    person.gender == 'male'?0:1,
+    person.age
+  ];
+},function(name,gender,age){
+  return new Person(name,gender?'female':'male',age);
+});
+```
+
+With this definition, when calling *ebjs.pack* on a *Person* object, we will obtain a binary buffer with the label (200) packed as a *Number*, followed by the name packed as a *String* and the gender and the age both packed as a *Number*. The definitions of *String* and *Number* are what defines the actual bytes that are placed in each place.
 
 ### Low level definitions
 
