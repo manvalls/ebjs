@@ -60,7 +60,7 @@ ebjs.define(Person,200,[String,Number,Number],function(person){
 });
 ```
 
-With this definition, when calling *ebjs.pack* on a *Person* object, we will obtain a binary buffer with the label (200) packed as a *Number*, followed by the name packed as a *String* and the gender and the age both packed as a *Number*. The definitions of *String* and *Number* are what defines the actual bytes that are placed in each place.
+With this definition, when calling *ebjs.pack* on a *Person* object, we will obtain a binary buffer with the label (200) packed as a *Number*, followed by the name packed as a *String* and the gender and the age both packed as a *Number*. The definitions of *String* and *Number* are what determines the actual bytes that are placed in each location.
 
 ### Low level definitions
 
