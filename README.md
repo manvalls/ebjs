@@ -34,7 +34,7 @@ When defining a new type you may omit the label, but it's highly discouraged, an
 
 ### High level definitions
 
-These definitions are constructed on top of other ones previously defined in a synchronous way. As an example, take the following type:
+These definitions are constructed in a synchronous way on top of other ones previously defined. As an example, take the following type:
 
 ```javascript
 function Person(name,gender,age){
