@@ -44,7 +44,7 @@ function Person(name,gender,age){
 }
 ```
 
-Here, the *Person* type includes three properties: *name*, a string; *gender*, either 'male' or 'female', and age, a Number. We could define it in the following way:
+Here, the *Person* type includes three properties: *name*, a *String*; *gender*, either 'male' or 'female', and age, a *Number*. We could define it in the following way:
 
 ```javascript
 var ebjs = require('ebjs');
