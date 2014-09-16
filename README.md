@@ -49,13 +49,13 @@ Here, the *Person* type includes three properties: *name*, a *String*; *gender*,
 ```javascript
 var ebjs = require('ebjs');
 
-ebjs.define(Person,200,[String,Number,Number],function(person){
+ebjs.define(Person,200,[String,Number,Number],function packer(person){
   return [
     person.name,
     person.gender == 'male'?0:1,
     person.age
   ];
-},function(name,gender,age){
+},function unpacker(name,gender,age){
   return new Person(name,gender?'female':'male',age);
 });
 ```
@@ -64,7 +64,68 @@ With this definition, when calling *ebjs.pack* on a *Person* object, we will obt
 
 ### Low level definitions
 
-*This section is being written, please wait or write it yourself*
+If you need to control the exact bytes that are packed, or if you need to pack them in an asynchronous way, high level definitions are not enough. To demonstrate how low level definitions work, we'll be defining the *Byte* type:
+
+```javascript
+function Byte(value){
+  var n;
+  
+  this.value =  Math.max(0,
+                  Math.min(255,
+                    isNaN(n = parseInt(value))?0:n
+                  )
+                );
+  
+}
+```
+
+For this type, the packer function for the server (nodejs) could look like this:
+
+```javascript
+var ebjs = require('ebjs');
+
+function packer(args){
+  var res,
+      byte = args[0];
+  
+  res = this.write(new Buffer([byte.value]),onWrite);
+  if(res !== ebjs.deferred) this.end();
+}
+
+function onWrite(){
+  this.end();
+}
+
+```
+
+As you can see, the write operation has two arguments: a *Buffer* and a *Function*. **Low level operations can be either synchronous or asynchronous**. If the operation could be completed synchronously, it will return the result of the operation, if not, it will return `ebjs.deferred` and execute the provided *Function* when the operation is completed with the result of the operation. When we've finished packing our object, we must call `this.end();`, so that the pack operation can continue.
+
+Now let's get into the unpacker:
+
+```javascript
+var ebjs = require('ebjs');
+
+function unpacker(){
+  var res,
+      bytes;
+  
+  bytes = this.read(1,onRead);
+  if(bytes !== ebjs.deferred) this.end(bytes[0]);
+}
+
+function onRead(bytes){
+  this.end(bytes[0]);
+}
+
+```
+
+There are a few differences with the packer. The read operation accepts as arguments a *Number* and a *Function*, and returns a *Buffer* with read bytes. The *Number* represents the number of bytes to be read, and the *Function* has the same role as in the packer. When the unpacking is done, the result of it should be passed as an argument to the end call, and we're done. Now, all that's left is to put it all together:
+
+```javascript
+var ebjs = require('ebjs');
+
+ebjs.define(Byte,201,packer,unpacker);
+```
 
 ### Constants
 
