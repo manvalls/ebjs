@@ -44,7 +44,7 @@ function Person(name,gender,age){
 }
 ```
 
-Here, the *Person* type includes three properties: *name*, a *String*; *gender*, either 'male' or 'female', and age, a *Number*. We could define it in the following way:
+Here, the *Person* type includes three properties: *name*, a *String*; *gender*, either 'male' or 'female', and *age*, a *Number*. We could define it in the following way:
 
 ```javascript
 var ebjs = require('ebjs');
@@ -129,7 +129,16 @@ ebjs.define(Byte,201,packer,unpacker);
 
 ### Constants
 
-*This section is being written, please wait or write it yourself*
+You can also define things as constants. These definitions look like this:
+
+```javascript
+var ebjs = require('ebjs'),
+    someAwesomeObject = {};
+
+ebjs.define(someAwesomeObject,202);
+```
+
+With this definition, every time a pack operation happens on *someAwesomeObject* it will be packed as the 202 *Number*, and when unpacking, if the 202 label is found, *someAwesomeObject* is returned as the result of the operation.
 
 ## Reference
 
