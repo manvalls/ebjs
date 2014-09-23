@@ -14,10 +14,8 @@ var com = require('./common.js'),
     giverCB = new Property(),
     giverThat = new Property(),
     
-    type = new Property(),
+    options = new Property(),
     callback = new Property(),
-    thisArg = new Property(),
-    target = new Property(),
     
     brTagProp = new Property(),
     nextBrTag = new Property(),
@@ -30,10 +28,10 @@ var com = require('./common.js'),
     onFRLoad;
 
 function WriteBuffer(){
-  com.resolvers.of(this).set([]);
-  buffer.of(this).set([]);
-  nextBrTag.of(this).set(0);
-  brTagProp.of(this).set(new Property());
+  com.resolvers.set(this,[]);
+  buffer.set(this,[]);
+  nextBrTag.set(this,0);
+  brTagProp.set(this,new Property());
 }
 
 WriteBuffer.prototype = new Stepper();
@@ -52,7 +50,7 @@ pack = function(args,v){
       if(args.length == 1){
         v.data = constructor;
         
-        v.i = com.uLabel.of(v.data).get();
+        v.i = com.uLabel.get(v.data);
         if(v.i != null){
           if(this.pack(Number,v.i,this.goTo('end',pack,v)) !== resolve.deferred) this.end();
           return;
@@ -68,14 +66,14 @@ pack = function(args,v){
         
         constructor = v.data.constructor;
         
-        while((v.i = com.label.of(constructor).get()) == null){
+        while((v.i = com.label.get(constructor)) == null){
           proto = Object.getPrototypeOf(constructor.prototype);
           if(!proto) throw new TypeError('Unsupported type "' + v.data.constructor.name + '"');
           constructor = proto.constructor;
         }
         
         if(this.pack(Number,v.i,this.goTo('pack',pack,v)) === resolve.deferred) return;
-      }else if((v.i = com.label.of(constructor).get()) == null) throw new TypeError('Unsupported type "' + constructor.name + '"');
+      }else if((v.i = com.label.get(constructor)) == null) throw new TypeError('Unsupported type "' + constructor.name + '"');
       
     case 'pack':
       
@@ -122,29 +120,31 @@ if(Blob){
   };
   
   Object.defineProperty(WriteBuffer.prototype,'write',{value: function(data,callback){
-    var trg = target.of(this).get();
+    var trg = options.get(this).target;
     
     if(trg && trg.give){
       giverCB.set(trg,callback);
       giverThat.set(trg,this);
-      toData(data instanceof Blob?data:new Blob([data]),type.of(this).get(),giver,trg);
+      toData(data instanceof Blob?data:new Blob([data]),type.get(this),giver,trg);
       return resolve.deferred;
-    }else buffer.of(this).get().push(data);
+    }else buffer.get(this).push(data);
   }});
   
 }else Object.defineProperty(WriteBuffer.prototype,'write',{value: function(data,callback){
-  var buff = com.toBuffer(data),trg = target.of(this).get();
+  var buff = com.toBuffer(data),
+      opt = options.get(this),
+      trg = opt.target;
   
   if(buff){
     if(trg){
-      if(trg.write) trg.write(toData(buff,type.of(this).get()));
-      else trg.give(toData(buff,type.of(this).get()));
-    }else buffer.of(this).get().push(buff);
+      if(trg.write) trg.write(toData(buff,opt.type));
+      else trg.give(toData(buff,opt.type));
+    }else buffer.get(this).push(buff);
   }
 }});
 
 Object.defineProperty(WriteBuffer.prototype,'end',{value: function(){
-  com.resolvers.of(this).get().pop().resolve();
+  com.resolvers.get(this).pop().resolve();
 }});
 
 if(Blob){
@@ -162,7 +162,7 @@ if(Blob){
     this.cb.call(this.that,data);
   };
   
-  toData = function(data,type,callback,that){
+  toData = function(data,type,callback,that,sync){
     var fr;
     
     type = type || '';
@@ -188,21 +188,23 @@ if(Blob){
         fr.readAsArrayBuffer(data);
       } break;
       default:
-        nextTick(callback,[data],that);
+        if(sync) callback.call(that,data);
+        else nextTick(callback,[data],that);
     }
     
   };
   
   onEnd = function(){
-    var fr,cb,t,that,res,trg;
+    var fr,cb,t,that,res,trg,opt;
     
-    cb = callback.of(this).get();
-    t = type.of(this).get();
-    that = thisArg.of(this).get();
-    trg = target.of(this).get();
+    opt = options.get(this);
+    cb = callback.get(this);
+    t = opt.type;
+    that = opt.thisArg;
+    trg = opt.target;
     
     if(trg) cb.call(that,trg);
-    else toData(new Blob(buffer.of(this).value),t,cb,that);
+    else toData(new Blob(buffer.get(this)),t,cb,that);
   };
   
 }else{
@@ -220,32 +222,30 @@ if(Blob){
   };
   
   onEnd = function(){
-    var fr,cb,t,that,buff,result;
-  
-    cb = callback.of(this).get();
-    t = type.of(this).get();
-    that = thisArg.of(this).get();
+    var fr,cb,t,that,buff,result,opt;
     
-    cb.call(that,toData(Buffer.concat(buffer.of(this).value),t));
+    opt = options.get(this);
+    cb = callback.get(this);
+    t = opt.type;
+    that = opt.thisArg;
+    
+    cb.call(that,toData(Buffer.concat(buffer.get(this)),t));
   };
   
 }
 
-module.exports = function(data,cb,that,t,tar){
+module.exports = function(data,cb,opt){
   var b = new WriteBuffer(),res;
   
-  if(typeof that == 'string'){
-    tar = t;
-    t = that;
-    that = window;
-  }
+  opt = opt || {};
   
-  type.of(b).set(t);
-  callback.of(b).set(cb);
-  thisArg.of(b).set(that);
-  target.of(b).set(tar);
+  options.set(b,opt);
+  callback.set(b,cb);
   
   res = b.pack(data,onEnd);
-  if(res !== resolve.deferred) nextTick(onEnd,[],b);
+  if(res !== resolve.deferred){
+    if(opt.sync) onEnd.call(b);
+    else nextTick(onEnd,[],b);
+  }
 };
 

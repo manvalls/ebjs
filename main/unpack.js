@@ -42,12 +42,12 @@ if(Buffer){ // nodejs block
     
     brPool.set(this,[]);
     brFlags.set(this,[]);
-    com.resolvers.of(this).set([]);
+    com.resolvers.set(this,[]);
     
-    if(buff) pool.of(this).set(buff);
+    if(buff) pool.set(this,buff);
     else{
-      pool.of(this).set(new Buffer(0));
-      thisArg.of(data).value = this;
+      pool.set(this,new Buffer(0));
+      thisArg.set(data,this);
       if(data.read && data.on) data.on('data',onData);
       else data.upTo(Infinity).take(onData);
     }
@@ -60,21 +60,21 @@ if(Buffer){ // nodejs block
     
     brPool.set(this,[]);
     brFlags.set(this,[]);
-    com.resolvers.of(this).set([]);
+    com.resolvers.set(this,[]);
     
     if(arr){
-      pool.of(this).set(arr);
+      pool.set(this,arr);
       return;
     }
     
-    pool.of(this).set(new Uint8Array(0));
+    pool.set(this,new Uint8Array(0));
     
     if(data instanceof Blob){
-      blobPool.of(this).set(data);
+      blobPool.set(this,data);
       return;
     }
     
-    if(allowBlobs) blobPool.of(this).set(new Blob());
+    if(allowBlobs) blobPool.set(this,new Blob());
     data.upTo(Infinity).take(onData,this);
   };
   
@@ -86,41 +86,41 @@ ReadBuffer.prototype.constructor = ReadBuffer;
 if(Buffer){ // nodejs block
   
   onData = function(data){
-    var that = thisArg.of(this).get(),
-        p = pool.of(that).get(),
-        cro = currentReadOp.of(that).get(),
-        n = currentBytes.of(that).get(),
+    var that = thisArg.get(this),
+        p = pool.get(that),
+        cro = currentReadOp.get(that),
+        n = currentBytes.get(that),
         ret;
     
     data = com.toBuffer(data,true);
-    pool.of(that).set(p = Buffer.concat([p,data]));
+    pool.set(that,p = Buffer.concat([p,data]));
     
     if(cro && p.length >= n){
-      currentReadOp.of(that).set(undefined);
-      currentBytes.of(that).set(undefined);
+      currentReadOp.set(that,undefined);
+      currentBytes.set(that,undefined);
       
       ret = p.slice(0,n);
-      pool.of(that).set(p.slice(n));
+      pool.set(that,p.slice(n));
       cro.resolve(ret);
     }
   };
   
   readBytes = function(that,n){
     var ret,
-        p = pool.of(that).get();
+        p = pool.get(that);
     
-    if(currentReadOp.of(that).get()) throw 'Only one read operation at a time';
+    if(currentReadOp.get(that)) throw 'Only one read operation at a time';
     
     this.blob = false;
     
     if(p.length < n){
-      currentBytes.of(that).set(n);
-      currentReadOp.of(that).set(this);
+      currentBytes.set(that,n);
+      currentReadOp.set(that,this);
       return;
     }
     
     ret = p.slice(0,n);
-    pool.of(that).set(p.slice(n));
+    pool.set(that,p.slice(n));
     this.resolve(ret);
   };
   
@@ -128,10 +128,10 @@ if(Buffer){ // nodejs block
   
   onData = function(data){
     var arr = com.toArray(data),
-        bp = blobPool.of(this).get(),
-        p = pool.of(this).get(),
-        n = currentBytes.of(that).get(),
-        op = currentReadOp.of(that).get(),
+        bp = blobPool.get(this),
+        p = pool.get(this),
+        n = currentBytes.get(that),
+        op = currentReadOp.get(that),
         bn,
         bop,
         size,
@@ -149,8 +149,8 @@ if(Buffer){ // nodejs block
       size = bp.size;
       bp = new Blob([bp,arr || data]);
       
-      bn = currentBlobSize.of(that).get();
-      bop = currentBlobReadOp.of(that).get();
+      bn = currentBlobSize.get(that);
+      bop = currentBlobReadOp.get(that);
       
       if(size == p.length && arr){
         newPool = new Uint8Array(p.length + arr.length);
@@ -169,8 +169,8 @@ if(Buffer){ // nodejs block
           bp = bp.slice(n);
         }
         
-        pool.of(this).set(newPool);
-        blobPool.of(this).set(bp);
+        pool.set(this,newPool);
+        blobPool.set(this,bp);
         
         if(ret) op.resolve(ret);
         if(bret) bop.resolve(bret);
@@ -180,11 +180,11 @@ if(Buffer){ // nodejs block
         
         if(bn > size && bp.size >= bn){
           bret = bp.slice(0,n);
-          pool.of(this).set(p.subarray(n));
+          pool.set(this,p.subarray(n));
           bp = bp.slice(n);
         }
         
-        blobPool.of(this).set(bp);
+        blobPool.set(this,bp);
         
         if(bret) bop.resolve(bret);
       }
@@ -195,27 +195,27 @@ if(Buffer){ // nodejs block
   onFRLoad = function(){
     var view = new Uint8Array(this.result),
         that = this.that,
-        p = pool.of(that).get(),
-        bp = blobPool.of(that).get(),
-        n = currentBytes.of(that).get(),
-        op = currentReadOp.of(that).get(),
+        p = pool.get(that),
+        bp = blobPool.get(that),
+        n = currentBytes.get(that),
+        op = currentReadOp.get(that),
         bytes = new Uint8Array(view.length + p.length);
     
     bytes.set(p);
     bytes.set(view,p.length);
     
-    pool.of(that).set(bytes.subarray(n));
-    blobPool.of(that).set(bp.slice(n));
+    pool.set(that,bytes.subarray(n));
+    blobPool.set(that,bp.slice(n));
     
-    currentBytes.of(that).set(undefined);
-    currentReadOp.of(that).set(undefined);
+    currentBytes.set(that,undefined);
+    currentReadOp.set(that,undefined);
     
     op.resolve(bytes.subarray(0,n));
   };
   
   bpToPool = function(that,n){
-    var p = pool.of(that).get(),
-        bp = blobPool.of(that).get(),
+    var p = pool.get(that),
+        bp = blobPool.get(that),
         fr = new FileReader(),
         blob;
     
@@ -230,10 +230,10 @@ if(Buffer){ // nodejs block
   
   readBytes = function(that,n){
     var ret,
-        p = pool.of(that).get(),
-        bp = blobPool.of(that).get();
+        p = pool.get(that),
+        bp = blobPool.get(that);
     
-    if(currentReadOp.of(that).get() || currentBlobReadOp.of(that).get())
+    if(currentReadOp.get(that).get() || currentBlobReadOp.of(that))
     throw 'Only one read operation at a time';
     
     this.blob = false;
@@ -241,33 +241,33 @@ if(Buffer){ // nodejs block
     if(p.length < n){
       if(bp && bp.size >=  n) bpToPool(that,n);
       
-      currentBytes.of(that).set(n);
-      currentReadOp.of(that).set(this);
+      currentBytes.set(that,n);
+      currentReadOp.set(that,this);
       return;
     }
     
     ret = p.subarray(0,n);
     
-    pool.of(that).set(p.subarray(n));
-    if(bp) blobPool.of(that).set(bp.slice(n));
+    pool.set(that,p.subarray(n));
+    if(bp) blobPool.set(that,bp.slice(n));
     
     this.resolve(ret);
   };
   
   onBytes = function(bytes){
-    onBytesTarget.of(this).get().resolve(new Blob([bytes]));
+    onBytesTarget.get(this).resolve(new Blob([bytes]));
   };
   
   readBlob = function(that,n){
     var ret,
-        p = pool.of(that).get(),
-        bp = blobPool.of(that).get();
+        p = pool.get(that),
+        bp = blobPool.get(that);
     
-    if(currentReadOp.of(that).get() || currentBlobReadOp.of(that).get())
+    if(currentReadOp.get(that).get() || currentBlobReadOp.of(that))
     throw 'Only one read operation at a time';
     
     if(!bp){
-      onBytesTarget.of(that).set(this);
+      onBytesTarget.set(that,this);
       ret = that.read(n,onBytes);
       if(ret != resolve.deferred) onBytes.call(that,ret);
       return;
@@ -275,14 +275,14 @@ if(Buffer){ // nodejs block
     
     if(bp.size >= n){
       ret = bp.slice(0,n);
-      blobPool.of(that).set(bp.slice(n));
-      pool.of(that).set(p.subarray(n));
+      blobPool.set(that,bp.slice(n));
+      pool.set(that,p.subarray(n));
       this.resolve(ret);
       return;
     }
     
-    currentBlobReadOp.of(that).set(this);
-    currentBlobSize.of(that).set(n);
+    currentBlobReadOp.set(that,this);
+    currentBlobSize.set(that,n);
   };
   
   Object.defineProperty(ReadBuffer.prototype,'readBlob',{value: function(n,callback){
@@ -309,7 +309,7 @@ unpack = function(args,v){
         v.setFlag = true;
         v.i = this.unpack(Number,this.goTo('unpack',unpack,v));
         if(v.i == resolve.deferred) return;
-      }else v.i = com.label.of(constructor).get();
+      }else v.i = com.label.get(constructor);
     
     case 'unpack':
       
@@ -373,25 +373,30 @@ Object.defineProperty(ReadBuffer.prototype,'start',{value: function(data){
 
 Object.defineProperty(ReadBuffer.prototype,'end',{value: function(data){
   if(brFlags.get(this).pop()) brPool.get(this).push(data);
-  com.resolvers.of(this).get().pop().resolve(data);
+  com.resolvers.get(this).pop().resolve(data);
 }});
 
 onEnd = function(data){
-  var cb = finalCb.of(this).get(),
-      that = finalCbThis.of(this).get();
+  var cb = finalCb.get(this),
+      that = finalCbThis.get(this);
   
   cb.call(that,data);
 };
 
-module.exports = function(buff,callback,that){
+module.exports = function(buff,callback,options){
   var b = new ReadBuffer(buff),
       elem;
   
-  finalCb.of(b).set(callback);
-  finalCbThis.of(b).set(that || b);
+  options = options || {};
+  
+  finalCb.set(b,callback);
+  finalCbThis.set(b,options.thisArg || b);
   
   elem = b.unpack(onEnd);
-  if(elem != resolve.deferred) nextTick(onEnd,[elem],b);
+  if(elem != resolve.deferred){
+    if(options.sync) onEnd.call(b,elem);
+    else nextTick(onEnd,[elem],b);
+  }
 };
 
 module.exports.maxRAM = 1e3;
