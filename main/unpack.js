@@ -233,7 +233,7 @@ if(Buffer){ // nodejs block
         p = pool.get(that),
         bp = blobPool.get(that);
     
-    if(currentReadOp.get(that).get() || currentBlobReadOp.of(that))
+    if(currentReadOp.get(that) || currentBlobReadOp.get(that))
     throw 'Only one read operation at a time';
     
     this.blob = false;
@@ -263,7 +263,7 @@ if(Buffer){ // nodejs block
         p = pool.get(that),
         bp = blobPool.get(that);
     
-    if(currentReadOp.get(that).get() || currentBlobReadOp.of(that))
+    if(currentReadOp.get(that) || currentBlobReadOp.get(that))
     throw 'Only one read operation at a time';
     
     if(!bp){
