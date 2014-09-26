@@ -386,10 +386,10 @@ onEnd = function(data){
 };
 
 module.exports = function(buff,callback,options){
+  options = options || {};
+  
   var b = new ReadBuffer(buff,options.allowBlobs,options.sync),
       elem;
-  
-  options = options || {};
   
   finalCb.set(b,callback);
   finalCbThis.set(b,options.thisArg || b);
