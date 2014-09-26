@@ -195,7 +195,7 @@ if(Blob){
   };
   
   onEnd = function(){
-    var fr,cb,t,that,res,trg,opt;
+    var cb,t,that,trg,opt;
     
     opt = options.get(this);
     cb = callback.get(this);
@@ -222,14 +222,16 @@ if(Blob){
   };
   
   onEnd = function(){
-    var fr,cb,t,that,buff,result,opt;
+    var cb,t,that,trg,buff,opt;
     
     opt = options.get(this);
     cb = callback.get(this);
     t = opt.type;
     that = opt.thisArg;
+    trg = opt.target;
     
-    cb.call(that,toData(Buffer.concat(buffer.get(this)),t));
+    if(trg) cb.call(that,trg);
+    else cb.call(that,toData(Buffer.concat(buffer.get(this)),t));
   };
   
 }
