@@ -37,7 +37,7 @@ var nextTick = require('vz.next-tick'),
 
 if(Buffer){ // nodejs block
   
-  ReadBuffer = function(data){
+  ReadBuffer = function(data,allowBlobs,sync){
     var buff = com.toBuffer(data,true);
     
     brPool.set(this,[]);
@@ -49,13 +49,14 @@ if(Buffer){ // nodejs block
       pool.set(this,new Buffer(0));
       thisArg.set(data,this);
       if(data.read && data.on) data.on('data',onData);
+      else if(sync) data.upTo(Infinity).inPlace().take(onData);
       else data.upTo(Infinity).take(onData);
     }
   };
   
 }else{ // browser block
   
-  ReadBuffer = function(data,allowBlobs){
+  ReadBuffer = function(data,allowBlobs,sync){
     var arr = com.toArray(data);
     
     brPool.set(this,[]);
@@ -75,7 +76,8 @@ if(Buffer){ // nodejs block
     }
     
     if(allowBlobs) blobPool.set(this,new Blob());
-    data.upTo(Infinity).take(onData,this);
+    if(sync) data.upTo(Infinity).inPlace().take(onData,this);
+    else data.upTo(Infinity).take(onData,this);
   };
   
 }
@@ -384,7 +386,7 @@ onEnd = function(data){
 };
 
 module.exports = function(buff,callback,options){
-  var b = new ReadBuffer(buff),
+  var b = new ReadBuffer(buff,options.allowBlobs,options.sync),
       elem;
   
   options = options || {};

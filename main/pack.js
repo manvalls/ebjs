@@ -115,7 +115,7 @@ Object.defineProperty(WriteBuffer.prototype,'pack',{value: function(constructor,
 if(Blob){
   
   giver = function(data){
-    this.give(data);
+    this.inPlace().give(data);
     giverCB.get(this).call(giverThat.get(this));
   };
   
@@ -138,6 +138,7 @@ if(Blob){
   if(buff){
     if(trg){
       if(trg.write) trg.write(toData(buff,opt.type));
+      else if(opt.sync) trg.inPlace().give(toData(buff,opt.type));
       else trg.give(toData(buff,opt.type));
     }else buffer.get(this).push(buff);
   }
