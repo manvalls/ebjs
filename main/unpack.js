@@ -109,7 +109,7 @@ if(Buffer){ // nodejs block
     var ret,
         p = pool.get(that);
     
-    if(currentReadOp.get(that)) throw 'Only one read operation at a time';
+    if(currentReadOp.get(that)) throw new Error('Only one read operation at a time');
     
     this.blob = false;
     
@@ -234,7 +234,7 @@ if(Buffer){ // nodejs block
         bp = blobPool.get(that);
     
     if(currentReadOp.get(that) || currentBlobReadOp.get(that))
-    throw 'Only one read operation at a time';
+    throw new Error('Only one read operation at a time');
     
     this.blob = false;
     
@@ -264,7 +264,7 @@ if(Buffer){ // nodejs block
         bp = blobPool.get(that);
     
     if(currentReadOp.get(that) || currentBlobReadOp.get(that))
-    throw 'Only one read operation at a time';
+    throw new Error('Only one read operation at a time');
     
     if(!bp){
       onBytesTarget.set(that,this);
@@ -358,7 +358,7 @@ Object.defineProperty(ReadBuffer.prototype,'unpack',{value: function(constructor
   
   if(!callback){
     flags = brFlags.get(this);
-    if(flags[flags.length - 1] === true) throw 'To use generic chained unpack calls you must call ReadBuffer.start first';
+    if(flags[flags.length - 1] === true) throw new Error('To use generic chained unpack calls you must call ReadBuffer.start first');
     args = [];
     callback = constructor;
   }else args = [constructor];
