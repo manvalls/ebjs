@@ -132,8 +132,8 @@ if(Buffer){ // nodejs block
     var arr = com.toArray(data),
         bp = blobPool.get(this),
         p = pool.get(this),
-        n = currentBytes.get(that),
-        op = currentReadOp.get(that),
+        n = currentBytes.get(this),
+        op = currentReadOp.get(this),
         bn,
         bop,
         size,
@@ -151,8 +151,8 @@ if(Buffer){ // nodejs block
       size = bp.size;
       bp = new Blob([bp,arr || data]);
       
-      bn = currentBlobSize.get(that);
-      bop = currentBlobReadOp.get(that);
+      bn = currentBlobSize.get(this);
+      bop = currentBlobReadOp.get(this);
       
       if(size == p.length && arr){
         newPool = new Uint8Array(p.length + arr.length);

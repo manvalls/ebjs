@@ -120,12 +120,13 @@ if(Blob){
   };
   
   Object.defineProperty(WriteBuffer.prototype,'write',{value: function(data,callback){
-    var trg = options.get(this).target;
+    var opt = options.get(this),
+        trg = opt.target;
     
     if(trg && trg.give){
       giverCB.set(trg,callback);
       giverThat.set(trg,this);
-      toData(data instanceof Blob?data:new Blob([data]),type.get(this),giver,trg);
+      toData(data instanceof Blob?data:new Blob([data]),opt.type,giver,trg);
       return resolve.deferred;
     }else buffer.get(this).push(data);
   }});
