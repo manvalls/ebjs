@@ -1,255 +1,109 @@
-
 var com = require('./common.js'),
-    
-    resolve = require('vz.resolve'),
-    nextTick = require('vz.next-tick'),
+    InternalBuffer = require('./InternalBuffer.js'),
+    walk = require('vz.walk'),
     Property = require('vz.property'),
-    Stepper = require('vz.stepper'),
     
     Buffer = global.Buffer,
-    Blob = global.Blob,
     
-    buffer = new Property(),
-    
-    giverCB = new Property(),
-    giverThat = new Property(),
-    
-    options = new Property(),
-    callback = new Property(),
-    
-    brTagProp = new Property(),
-    nextBrTag = new Property(),
-    
-    pack,
-    onEnd,
-    toData,
-    giver,
-    
-    onFRLoad;
+    internal = new Property();
 
 function WriteBuffer(){
-  com.resolvers.set(this,[]);
-  buffer.set(this,[]);
-  nextBrTag.set(this,0);
-  brTagProp.set(this,new Property());
-}
-
-WriteBuffer.prototype = new Stepper();
-WriteBuffer.prototype.constructor = WriteBuffer;
-
-pack = function(args,v){
-  var proto,constructor,type,elem;
   
-  switch(this.step){
-    
-    case 'start':
-      
-      constructor = args[0];
-      v.data = args[1];
-      
-      if(args.length == 1){
-        v.data = constructor;
-        
-        v.i = com.uLabel.get(v.data);
-        if(v.i != null){
-          if(this.pack(Number,v.i,this.goTo('end',pack,v)) !== resolve.deferred) this.end();
-          return;
-        }
-        
-        v.brTag = brTagProp.get(this).get(v.data);
-        
-        if(v.brTag != null){
-          if(this.pack(Number,0,this.goTo('br-tag',pack,v)) === resolve.deferred) return;
-          if(this.pack(Number,v.brTag,this.goTo('end',pack,v)) === resolve.deferred) return;
-          return this.end();
-        }else brTagProp.get(this).set(v.data,nextBrTag.of(this).value++);
-        
-        constructor = v.data.constructor;
-        
-        while((v.i = com.label.get(constructor)) == null){
-          proto = Object.getPrototypeOf(constructor.prototype);
-          if(!proto) throw new TypeError('Unsupported type "' + v.data.constructor.name + '"');
-          constructor = proto.constructor;
-        }
-        
-        if(this.pack(Number,v.i,this.goTo('pack',pack,v)) === resolve.deferred) return;
-      }else if((v.i = com.label.get(constructor)) == null) throw new TypeError('Unsupported type "' + constructor.name + '"');
-      
-    case 'pack':
-      
-      if(com.types[v.i]){
-        v.arr = com.packers[v.i].call(this,v.data);
-        v.types = com.types[v.i].slice();
-      }else if(com.packers[v.i]) return this.goTo('start',com.packers[v.i])(v.data);
-    
-    case 'pack-type':
-      
-      while(type = v.types.shift()){
-        elem = v.arr.shift();
-        if(this.pack(type,elem,this.goTo('pack-type',pack,v)) === resolve.deferred) return;
-      }
-      
-    case 'end':
-      this.end();
-      break;
-    
-    case 'br-tag':
-      if(this.pack(Number,v.brTag,this.goTo('end',pack,v)) === resolve.deferred) return;
-      return this.end();
-    
-  }
-  
-};
-
-Object.defineProperty(WriteBuffer.prototype,'pack',{value: function(constructor,data,callback){
-  var args;
-  
-  if(!callback){
-    args = [constructor];
-    callback = data;
-  }else args = [constructor,data];
-  
-  return resolve(com.resFunction,[callback,this.goTo('start',pack),args,this],com.resCallback);
-}});
-
-if(Blob){
-  
-  giver = function(data){
-    this.inPlace().give(data);
-    giverCB.get(this).call(giverThat.get(this));
-  };
-  
-  Object.defineProperty(WriteBuffer.prototype,'write',{value: function(data,callback){
-    var opt = options.get(this),
-        trg = opt.target;
-    
-    if(trg && trg.give){
-      giverCB.set(trg,callback);
-      giverThat.set(trg,this);
-      toData(data instanceof Blob?data:new Blob([data]),opt.type,giver,trg);
-      return resolve.deferred;
-    }else buffer.get(this).push(data);
-  }});
-  
-}else Object.defineProperty(WriteBuffer.prototype,'write',{value: function(data,callback){
-  var buff = com.toBuffer(data),
-      opt = options.get(this),
-      trg = opt.target;
-  
-  if(buff){
-    if(trg){
-      if(trg.write) trg.write(toData(buff,opt.type));
-      else if(opt.sync) trg.inPlace().give(toData(buff,opt.type));
-      else trg.give(toData(buff,opt.type));
-    }else buffer.get(this).push(buff);
-  }
-}});
-
-Object.defineProperty(WriteBuffer.prototype,'end',{value: function(){
-  com.resolvers.get(this).pop().resolve();
-}});
-
-if(Blob){
-  
-  onFRLoad = function onFRLoad(){
-    var data = this.result,i;
-    
-    if(this.base64){
-      i = data.indexOf('base64,');
-      
-      if(i == -1) data = data.substring(5);
-      else data = data.substring(i + 7);
-    }
-    
-    this.cb.call(this.that,data);
-  };
-  
-  toData = function(data,type,callback,that,sync){
-    var fr;
-    
-    type = type || '';
-    
-    switch(type.toLowerCase()){
-      case 'base64':
-        fr = new FileReader();
-        fr.base64 = true;
-      case 'dataurl':
-        fr = fr || new FileReader();
-        
-        fr.onload = onFRLoad;
-        fr.cb = callback;
-        fr.that = that;
-        fr.readAsDataURL(data);
-        break;
-      case 'arraybuffer': {
-        fr = new FileReader();
-        
-        fr.onload = onFRLoad;
-        fr.cb = callback;
-        fr.that = that;
-        fr.readAsArrayBuffer(data);
-      } break;
-      default:
-        if(sync) callback.call(that,data);
-        else nextTick(callback,[data],that);
-    }
-    
-  };
-  
-  onEnd = function(){
-    var cb,t,that,trg,opt;
-    
-    opt = options.get(this);
-    cb = callback.get(this);
-    t = opt.type;
-    that = opt.thisArg;
-    trg = opt.target;
-    
-    if(trg) cb.call(that,trg);
-    else toData(new Blob(buffer.get(this)),t,cb,that);
-  };
-  
-}else{
-  
-  toData = function(buff,type){
-    type = type || '';
-    
-    switch(type.toLowerCase()){
-      case 'base64': return buff.toString('base64');
-      case 'dataurl': return 'data:;base64,' + buff.toString('base64');
-      case 'arraybuffer': return (new Uint8Array(buff)).buffer;
-      default: return buff;
-    }
-    
-  };
-  
-  onEnd = function(){
-    var cb,t,that,trg,buff,opt;
-    
-    opt = options.get(this);
-    cb = callback.get(this);
-    t = opt.type;
-    that = opt.thisArg;
-    trg = opt.target;
-    
-    if(trg) cb.call(that,trg);
-    else cb.call(that,toData(Buffer.concat(buffer.get(this)),t));
-  };
+  internal.set(this,{
+    bref: new Property(),
+    nextBref: 1,
+    buffer: new InternalBuffer()
+  });
   
 }
 
-module.exports = function(data,cb,opt){
-  var b = new WriteBuffer(),res;
+Object.defineProperties(WriteBuffer.prototype,{
   
-  opt = opt || {};
+  pack: {value: function(){
+    
+    switch(arguments.length){
+      case 1: return walk(pack,[this,arguments[0],null]); // pack(data);
+      case 2: return walk(pack,[this,arguments[1],arguments[0]]); // pack(Type,data);
+    }
+    
+  }},
   
-  options.set(b,opt);
-  callback.set(b,cb);
+  write: {value: function(data){
+    return walk(write,[data,internal.get(this)]);
+  }}
   
-  res = b.pack(data,onEnd);
-  if(res !== resolve.deferred){
-    if(opt.sync) onEnd.call(b);
-    else nextTick(onEnd,[],b);
+});
+
+function* write(data,id){
+  id.buffer.write(data);
+  if(id.target) while(id.buffer.size > 0){
+    yield id.target.push(
+      yield id.buffer.read(
+        Math.min(id.size,id.buffer.size),
+        id.type
+      )
+    );
   }
+}
+
+function* pack(buff,data,type){
+  var info,proto,id,brl;
+  
+  if(type){
+    info = com.info.get(type);
+    yield walk(info.packer,[buff,data]);
+    return;
+  }
+  
+  info = com.info.get(data);
+  
+  if(info && info.constant){
+    yield walk(pack,[buff,info.constant,Number]);
+    return;
+  }
+  
+  id = internal.get(buff);
+  
+  brl = id.bref.get(data);
+  if(brl){
+    yield walk(pack,[buff,0,Number]);
+    yield walk(pack,[buff,brl,Number]);
+    return;
+  }
+  
+  id.bref.set(data,id.nextBref++);
+  type = data.constructor;
+  
+  while(!((info = com.info.get(type)) && info.label)){
+    proto = Object.getPrototypeOf(type.prototype);
+    if(!proto) throw new TypeError('Unsupported type "' + data.constructor.name + '"');
+    type = proto.constructor;
+  }
+  
+  yield walk(pack,[buff,info.label,Number]);
+  yield walk(info.packer,[buff,data]);
+}
+
+function* packExport(data,type,target,chunkSize){
+  var buff = new WriteBuffer(),
+      id = internal.get(buff);
+  
+  if(Buffer) type = type || Buffer;
+  else type = type || Uint8Array;
+  
+  if(target){
+    id.target = target;
+    id.type = type;
+    id.size = chunkSize || 10e3;
+    yield buff.pack(data);
+  }else{
+    yield buff.pack(data);
+    return yield id.buffer.read(type);
+  }
+  
+}
+
+module.exports = function(data,type,target,chunkSize){
+  return walk(packExport,[data,type,target,chunkSize]);
 };
 

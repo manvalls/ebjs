@@ -1,8 +1,12 @@
-# Extensible binary javascript serialization
-
 [![NPM](https://nodei.co/npm/ebjs.png?downloads=true)](https://nodei.co/npm/ebjs/)
 
-No piece of software is ever completed, feel free to contribute and be humble
+This package uses or may use at some point in the future ECMAScript 6 features. Use it on a compatible environment or transpile it with Traceur, Closure Compiler, es6-transpiler or equivalent. Please note that some of these have flaws and bugs, test your code carefully until you find a suitable tool for your task.
+
+When cloning this repository, put the folder inside another named "node_modules" in order to avoid potential errors related to npm's dependency handling, and then run `npm install` on it.
+
+No piece of software is ever completed, feel free to contribute and be humble.
+
+# Extensible binary javascript serialization
 
 ## Description
 
@@ -13,13 +17,16 @@ This package is a tool which helps you define how your data is stored and transm
 Once you've included definitions for the types you want, you can simply use *ebjs.pack* and *ebjs.unpack*:
 
 ```javascript
-var ebjs = require('ebjs');
+var ebjs = require('ebjs'),
+    walk = require('vz.walk');
+
 require('ebjs.basic');
 
-ebjs.pack({foo: 'bar'},function(buffer){
-  ebjs.unpack(buffer,function(data){
-    console.log(data); // {foo: 'bar'}
-  });
+walk(function*(){
+  var buffer = yield ebjs.pack({foo: 'bar'});
+  data = yield ebjs.unpack(buffer);
+  
+  console.log(data); // {foo: 'bar'}
 });
 ```
 
@@ -30,11 +37,7 @@ Types are identified by an unsigned integer called *label*. Every type you defin
 - \[0\] Circular references
 - \[1-10\] *basic* group ([ebjs.basic](https://www.npmjs.org/package/ebjs.basic "ebjs.basic"))
 
-When defining a new type you may omit the label, but it's highly discouraged, and if you do, make sure to include all labeled definitions before the unlabeled ones, as unlabeled definitions will be assigned the next free label. This being said, there are two different ways of defining a new type: the sync, high level one, and the low level one.
-
-### High level definitions
-
-These definitions are constructed in a synchronous way on top of other ones previously defined. As an example, take the following type:
+When defining a new type you may omit the label, but it's highly discouraged, and if you do, make sure to include all labeled definitions before the unlabeled ones, as unlabeled definitions will be assigned the next free label. Also, you must specify a packer generator and an unpacker generator. Consider the following type:
 
 ```javascript
 function Person(name,gender,age){
@@ -44,27 +47,29 @@ function Person(name,gender,age){
 }
 ```
 
-Here, the *Person* type includes three properties: *name*, a *String*; *gender*, either 'male' or 'female', and *age*, a *Number*. We could define it in the following way:
+It could be defined in the following way:
 
 ```javascript
 var ebjs = require('ebjs');
 
-ebjs.define(Person,200,[String,Number,Number],function packer(person){
-  return [
-    person.name,
-    person.gender == 'male'?0:1,
-    person.age
-  ];
-},function unpacker(name,gender,age){
-  return new Person(name,gender?'female':'male',age);
+ebjs.define(Person,200,[String,Number,Number],function*(buffer,person){
+  
+  yield buffer.pack(String,person.name);
+  yield buffer.pack(String,person.gender);
+  yield buffer.pack(Number,person.age);
+  
+},function*(buffer){
+  var name,gender,age;
+  
+  name = yield buffer.unpack(String);
+  gender = yield buffer.unpack(String);
+  age = yield buffer.unpack(Number);
+  
+  return new Person(name,gender,age);
 });
 ```
 
-With this definition, when calling *ebjs.pack* on a *Person* object, we will obtain a binary buffer with the label (200) packed as a *Number*, followed by the name packed as a *String* and the gender and the age both packed as a *Number*. The definitions of *String* and *Number* are what determines the actual bytes that are placed in each location.
-
-### Low level definitions
-
-If you need to control the exact bytes that are packed, or if you need to pack them in an asynchronous way, high level definitions are not enough. To demonstrate how low level definitions work, we'll be defining the *Byte* type:
+With this definition, when calling *ebjs.pack* on a *Person* object, we will obtain a binary buffer with the label (200) packed as a *Number*, followed by the name packed as a *String* and the gender and the age both packed as a *Number*. The definitions of *String* and *Number* are what determines the actual bytes that are placed in each location. To demonstrate how to write bytes, we'll be defining the *Byte* type:
 
 ```javascript
 function Byte(value){
@@ -79,55 +84,21 @@ function Byte(value){
 }
 ```
 
-For this type, the packer function for the server (nodejs) could look like this:
+The definition of this type could be:
 
 ```javascript
 var ebjs = require('ebjs');
 
-function packer(args){
-  var res,
-      byte = args[0];
+ebjs.define(Byte,201,function*(buffer,byte){
   
-  res = this.write(new Buffer([byte.value]),onWrite);
-  if(res !== ebjs.deferred) this.end();
-}
-
-function onWrite(){
-  this.end();
-}
-
-```
-
-As you can see, the write operation has two arguments: a *Buffer* and a *Function*. **Low level operations can be either synchronous or asynchronous**. If the operation could be completed synchronously, it will return the result of the operation, if not, it will return `ebjs.deferred` and execute the provided *Function* when the operation is completed with the result of the operation. When we've finished packing our object, we must call `this.end();`, so that the pack operation can continue.
-
-Now let's get into the unpacker:
-
-```javascript
-var ebjs = require('ebjs');
-
-function unpacker(){
-  var res,
-      bytes;
+  yield buffer.write(new Buffer([byte.value]));
   
-  bytes = this.read(1,onRead);
-  if(bytes !== ebjs.deferred) this.end(bytes[0]);
-}
-
-function onRead(bytes){
-  this.end(bytes[0]);
-}
-
+},function*(buffer){
+  
+  return new Byte(yield buffer.read(1));
+  
+});
 ```
-
-There are a few differences with the packer. The read operation accepts as arguments a *Number* and a *Function*, and returns a *Buffer* with read bytes. The *Number* represents the number of bytes to be read, and the *Function* has the same role as in the packer. When the unpacking is done, the result of it should be passed as an argument to the end call, and we're done. Now, all that's left is to put it all together:
-
-```javascript
-var ebjs = require('ebjs');
-
-ebjs.define(Byte,201,packer,unpacker);
-```
-
-### Constants
 
 You can also define things as constants. These definitions look like this:
 
@@ -139,8 +110,3 @@ ebjs.define(someAwesomeObject,202);
 ```
 
 With this definition, every time a pack operation happens on *someAwesomeObject* it will be packed as the 202 *Number*, and when unpacking, if the 202 label is found, *someAwesomeObject* is returned as the result of the operation.
-
-## Reference
-
-*This section is being written, please wait or write it yourself*
-

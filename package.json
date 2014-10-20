@@ -5,9 +5,12 @@
   "main": "main.js",
   "dependencies": {
     "vz.property": "",
-    "vz.next-tick": "",
-    "vz.resolve": "",
-    "vz.stepper": ""
+    "vz.walk": "",
+    "vz.constants": "",
+    "vz.yielded": ""
+  },
+  "engines": {
+    "node": ">=0.11.x"
   },
   "repository": {
     "type": "git",

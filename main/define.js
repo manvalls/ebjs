@@ -1,40 +1,42 @@
-
 var com = require('./common.js');
 
-module.exports = function(constructor,label,types,packer,unpacker){
-	if(typeof label != 'number'){
-		unpacker = packer;
-		packer = types;
-		types = label;
-		label = undefined;
-	}
-	
-	if(types && !unpacker){
-		unpacker = packer;
-		packer = types;
-		types = undefined;
-	}
-	
-  if(packer?com.label.of(constructor).get():com.uLabel.of(constructor).get())
-  throw 'Already defined';
+module.exports = function(){
+  var data = arguments[0],
+      info = com.info.default(data,{data: data}),
+      i = 0,
+      label;
   
-	if(label != null){
-		if(com.classes[label]) throw 'Label in use';
-		
-		com.classes[label] = constructor;
-		com.types[label] = types;
-		com.packers[label] = packer;
-		com.unpackers[label] = unpacker;
-		
-		return packer?com.label.of(constructor).set(label):com.uLabel.of(constructor).set(label);
-	}
-	
-	com.classes.push(constructor);
-	com.types.push(types);
-	com.packers.push(packer);
-	com.unpackers.push(unpacker);
-	
-	return packer?com.label.of(constructor).set(com.classes.length - 1):com.uLabel.of(constructor).set(com.classes.length - 1);
-}
+  switch(arguments.length){
+    case 2: // define(obj,label);
+      label = arguments[1];
+      if(com.labels[label]) throw 'Label in use';
+    case 1: // define(obj);
+      if(info.constant) throw 'Already defined';
+      
+      if(!label) label = com.nextLabel++;
+      com.labels[label] = info;
+      
+      info.constant = label;
+      
+      break;
+    
+    case 4: // define(obj,label,packer,unpacker);
+      label = arguments[1];
+      if(com.labels[label]) throw 'Label in use';
+      i++;
+    case 3: // define(obj,packer,unpacker);
+      if(info.label) throw 'Already defined';
+      
+      if(!label) label = com.nextLabel++;
+      com.labels[label] = info;
+      
+      info.label = label;
+      info.packer = arguments[i + 1];
+      info.unpacker = arguments[i + 2];
+      
+      break;
+  }
+  
+  return label;
+};
 
-module.exports({},0); // Back Reference
