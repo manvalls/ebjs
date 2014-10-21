@@ -95,7 +95,7 @@ ebjs.define(Byte,201,function*(buffer,byte){
   
 },function*(buffer){
   
-  return new Byte(yield buffer.read(1));
+  return new Byte((yield buffer.read(1))[0]);
   
 });
 ```
