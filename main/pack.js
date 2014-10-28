@@ -2,18 +2,19 @@ var com = require('./common.js'),
     InternalBuffer = require('./InternalBuffer.js'),
     walk = require('vz.walk'),
     Property = require('vz.property'),
+    Su = require('vz.rand').Su,
     
     Buffer = global.Buffer,
     
-    internal = new Property();
+    internal = Su();
 
 function WriteBuffer(){
   
-  internal.set(this,{
+  this[internal] = {
     bref: new Property(),
     nextBref: 1,
     buffer: new InternalBuffer()
-  });
+  };
   
 }
 
@@ -29,7 +30,7 @@ Object.defineProperties(WriteBuffer.prototype,{
   }},
   
   write: {value: function(data){
-    return walk(write,[data,internal.get(this)]);
+    return walk(write,[data,this[internal]]);
   }}
   
 });
@@ -62,7 +63,7 @@ function* pack(buff,data,type){
     return;
   }
   
-  id = internal.get(buff);
+  id = buff[internal];
   
   brl = id.bref.get(data);
   if(brl){
@@ -86,7 +87,7 @@ function* pack(buff,data,type){
 
 function* packExport(data,type,target,chunkSize){
   var buff = new WriteBuffer(),
-      id = internal.get(buff);
+      id = buff[internal];
   
   if(Buffer) type = type || Buffer;
   else type = type || Uint8Array;

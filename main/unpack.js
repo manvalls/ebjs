@@ -1,39 +1,39 @@
 var com = require('./common.js'),
     InternalBuffer = require('./InternalBuffer.js'),
-    Property = require('vz.property'),
+    Su = require('vz.rand').Su,
     walk = require('vz.walk'),
     
-    internal = new Property(),
+    internal = Su(),
     
     Buffer = global.Buffer,
     Blob = global.Blob;
 
 function ReadBuffer(target){
   
-  internal.set(this,{
+  this[internal] = {
     buffer: new InternalBuffer(),
     brefs: [],
     pushBr: false,
     target: target
-  });
+  };
   
 }
 
 Object.defineProperties(ReadBuffer.prototype,{
   
   unpack: {value: function(){
-    return walk(unpack,[this,arguments[0],internal.get(this)]);
+    return walk(unpack,[this,arguments[0],this[internal]]);
   }},
   
   read: {value: function(size,type){
     if(Buffer) type = type || Buffer;
     else type = type || Uint8Array;
     
-    return walk(read,[size,type,internal.get(this)]);
+    return walk(read,[size,type,this[internal]]);
   }},
   
   start: {value: function(data){
-    var id = internal.get(this);
+    var id = this[internal];
     
     if(!id.pushBr) return data;
     id.brefs.push(data);
@@ -93,7 +93,7 @@ module.exports = function(data){
   }
   
   buff = new ReadBuffer(),
-  id = internal.get(buff);
+  id = buff[internal];
   id.buffer.write(data);
   return buff.unpack();
 };
