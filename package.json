@@ -9,6 +9,10 @@
     "vz.yielded": "",
     "vz.rand": ""
   },
+  "devDependencies": {
+    "vz.test": "",
+    "vz.Yarr": ""
+  },
   "engines": {
     "node": ">=0.11.x"
   },
