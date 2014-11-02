@@ -52,7 +52,7 @@ It could be defined in the following way:
 ```javascript
 var ebjs = require('ebjs');
 
-ebjs.define(Person,200,[String,Number,Number],function*(buffer,person){
+ebjs.define(Person,200,function*(buffer,person){
   
   yield buffer.pack(String,person.name);
   yield buffer.pack(String,person.gender);
