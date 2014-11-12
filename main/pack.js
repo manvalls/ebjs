@@ -12,7 +12,7 @@ function WriteBuffer(){
   
   this[internal] = {
     bref: new Property(),
-    nextBref: 1,
+    nextBref: 0,
     buffer: new InternalBuffer()
   };
   

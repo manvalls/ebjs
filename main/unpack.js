@@ -46,6 +46,7 @@ Object.defineProperties(ReadBuffer.prototype,{
 
 function* unpack(buff,type,id){
   var label,
+      skip = false,
       info,
       i,
       data;
@@ -64,13 +65,13 @@ function* unpack(buff,type,id){
     
     id.pushBr = true;
     type = info.data;
-  }
+  }else skip = true;
   
   info = info || com.info.get(type);
   
   data = yield walk(info.unpacker,[buff]);
   
-  if(id.pushBr){
+  if(!skip && id.pushBr){
     id.brefs.push(data);
     id.pushBr = false;
   }
