@@ -36,6 +36,7 @@ Types are identified by an unsigned integer called *label*. Every type you defin
 
 - \[0\] Circular references
 - \[1-10\] *basic* group ([ebjs.basic](https://www.npmjs.org/package/ebjs.basic "ebjs.basic"))
+- \[11-20\] *extra* group ([ebjs.extra](https://www.npmjs.org/package/ebjs.extra "ebjs.extra"))
 
 When defining a new type you may omit the label, but it's highly discouraged, and if you do, make sure to include all labeled definitions before the unlabeled ones, as unlabeled definitions will be assigned the next free label. Also, you must specify a packer generator and an unpacker generator. Consider the following type:
 
