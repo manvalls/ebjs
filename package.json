@@ -7,7 +7,8 @@
     "vz.property": "",
     "vz.walk": "",
     "vz.yielded": "",
-    "vz.rand": ""
+    "vz.rand": "",
+    "binary-buffer": ""
   },
   "devDependencies": {
     "vz.test": "",

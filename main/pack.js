@@ -1,5 +1,5 @@
 var com = require('./common.js'),
-    InternalBuffer = require('./InternalBuffer.js'),
+    BinaryBuffer = require('binary-buffer'),
     walk = require('vz.walk'),
     Property = require('vz.property'),
     Su = require('vz.rand').Su,
@@ -13,7 +13,7 @@ function WriteBuffer(){
   this[internal] = {
     bref: new Property(),
     nextBref: 0,
-    buffer: new InternalBuffer()
+    buffer: new BinaryBuffer()
   };
   
 }
@@ -40,8 +40,8 @@ function* write(data,id){
   if(id.target) while(id.buffer.size > 0){
     yield id.target.push(
       yield id.buffer.read(
-        Math.min(id.size,id.buffer.size),
-        id.type
+        id.type,
+        Math.min(id.size,id.buffer.size)
       )
     );
   }

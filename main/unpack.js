@@ -1,5 +1,5 @@
 var com = require('./common.js'),
-    InternalBuffer = require('./InternalBuffer.js'),
+    BinaryBuffer = require('binary-buffer'),
     Su = require('vz.rand').Su,
     walk = require('vz.walk'),
     
@@ -11,7 +11,7 @@ var com = require('./common.js'),
 function ReadBuffer(target){
   
   this[internal] = {
-    buffer: new InternalBuffer(),
+    buffer: new BinaryBuffer(),
     brefs: [],
     pushBr: false,
     target: target
@@ -81,7 +81,7 @@ function* unpack(buff,type,id){
 
 function* read(size,type,id){
   if(id.target) while(size > id.buffer.size) id.buffer.write(yield id.target.shift());
-  return yield id.buffer.read(size,type);
+  return yield id.buffer.read(type,size);
 }
 
 module.exports = function(data){
