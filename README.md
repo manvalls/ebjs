@@ -53,18 +53,18 @@ It could be defined in the following way:
 ```javascript
 var ebjs = require('ebjs');
 
-ebjs.define(Person,200,function*(buffer,person){
+ebjs.define(Person,200,function*(person){
   
-  yield buffer.pack(String,person.name);
-  yield buffer.pack(String,person.gender);
-  yield buffer.pack(Number,person.age);
+  yield this.pack(String,person.name);
+  yield this.pack(String,person.gender);
+  yield this.pack(Number,person.age);
   
-},function*(buffer){
+},function*(){
   var name,gender,age;
   
-  name = yield buffer.unpack(String);
-  gender = yield buffer.unpack(String);
-  age = yield buffer.unpack(Number);
+  name = yield this.unpack(String);
+  gender = yield this.unpack(String);
+  age = yield this.unpack(Number);
   
   return new Person(name,gender,age);
 });
@@ -90,13 +90,13 @@ The definition of this type could be:
 ```javascript
 var ebjs = require('ebjs');
 
-ebjs.define(Byte,201,function*(buffer,byte){
+ebjs.define(Byte,201,function*(byte){
   
-  yield buffer.write(new Buffer([byte.value]));
+  yield this.write(new Buffer([byte.value]));
   
-},function*(buffer){
+},function*(){
   
-  return new Byte((yield buffer.read(1))[0]);
+  return new Byte((yield this.read(1))[0]);
   
 });
 ```

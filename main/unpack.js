@@ -21,16 +21,51 @@ function ReadBuffer(target){
 
 Object.defineProperties(ReadBuffer.prototype,{
   
-  unpack: {value: function(){
-    return walk(unpack,[this,arguments[0],this[internal]]);
-  }},
+  unpack: {value: walk.wrap(function*(type){
+    var label,
+        id = this[internal],
+        skip = false,
+        info,
+        i,
+        data;
+    
+    if(!type){
+      if(id.pushBr) throw new Error('To use chained generic unpack calls you must call ReadBuffer.start first');
+      
+      label = yield this.unpack(Number);
+      if(label === 0){
+        i = yield this.unpack(Number);
+        return id.brefs[i];
+      }
+      
+      info = com.labels[label];
+      if(info.constant === label) return info.data;
+      
+      id.pushBr = true;
+      type = info.data;
+    }else skip = true;
+    
+    info = info || com.info.get(type);
+    
+    data = yield walk(info.unpacker,[type],this);
+    
+    if(!skip && id.pushBr){
+      id.brefs.push(data);
+      id.pushBr = false;
+    }
+    
+    return data;
+  })},
   
-  read: {value: function(size,type){
+  read: {value: walk.wrap(function*(size,type){
+    var id = this[internal];
+    
     if(Buffer) type = type || Buffer;
     else type = type || Uint8Array;
     
-    return walk(read,[size,type,this[internal]]);
-  }},
+    if(id.target) while(size > id.buffer.size) id.buffer.write(yield id.target.shift());
+    return yield id.buffer.read(type,size);
+  })},
   
   start: {value: function(data){
     var id = this[internal];
@@ -43,46 +78,6 @@ Object.defineProperties(ReadBuffer.prototype,{
   }}
   
 });
-
-function* unpack(buff,type,id){
-  var label,
-      skip = false,
-      info,
-      i,
-      data;
-  
-  if(!type){
-    if(id.pushBr) throw new Error('To use chained generic unpack calls you must call ReadBuffer.start first');
-    
-    label = yield walk(unpack,[buff,Number,id]);
-    if(label === 0){
-      i = yield walk(unpack,[buff,Number,id]);
-      return id.brefs[i];
-    }
-    
-    info = com.labels[label];
-    if(info.constant === label) return info.data;
-    
-    id.pushBr = true;
-    type = info.data;
-  }else skip = true;
-  
-  info = info || com.info.get(type);
-  
-  data = yield walk(info.unpacker,[buff]);
-  
-  if(!skip && id.pushBr){
-    id.brefs.push(data);
-    id.pushBr = false;
-  }
-  
-  return data;
-}
-
-function* read(size,type,id){
-  if(id.target) while(size > id.buffer.size) id.buffer.write(yield id.target.shift());
-  return yield id.buffer.read(type,size);
-}
 
 module.exports = function(data){
   var buff,

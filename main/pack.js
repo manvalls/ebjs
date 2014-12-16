@@ -20,72 +20,64 @@ function WriteBuffer(){
 
 Object.defineProperties(WriteBuffer.prototype,{
   
-  pack: {value: function(){
+  pack: {value: walk.wrap(function*(type,data){
+    var info,proto,id,brl;
     
-    switch(arguments.length){
-      case 1: return walk(pack,[this,arguments[0],null]); // pack(data);
-      case 2: return walk(pack,[this,arguments[1],arguments[0]]); // pack(Type,data);
+    if(arguments.length > 1){
+      info = com.info.get(type);
+      yield walk(info.packer,[data,type],this);
+      return;
     }
     
-  }},
+    data = type;
+    info = com.info.get(data);
+    
+    if(info && info.constant){
+      yield this.pack(Number,info.constant);
+      return;
+    }
+    
+    id = this[internal];
+    
+    brl = id.bref.get(data);
+    if(brl){
+      yield this.pack(Number,0);
+      yield this.pack(Number,brl);
+      return;
+    }
+    
+    id.bref.set(data,id.nextBref++);
+    type = data.constructor;
+    
+    while(!((info = com.info.get(type)) && info.label)){
+      proto = Object.getPrototypeOf(type.prototype);
+      if(!proto) throw new TypeError('Unsupported type "' + data.constructor.name + '"');
+      type = proto.constructor;
+    }
+    
+    yield this.pack(Number,info.label);
+    yield walk(info.packer,[data,type],this);
+    
+  })},
   
-  write: {value: function(data){
-    return walk(write,[data,this[internal]]);
-  }}
+  write: {value: walk.wrap(function*(data){
+    var id = this[internal];
+    
+    id.buffer.write(data);
+    if(id.target) while(id.buffer.size > 0){
+      yield id.target.push(
+        yield id.buffer.read(
+          id.type,
+          Math.min(id.size,id.buffer.size)
+        )
+      );
+    }
+    
+  })}
   
 });
 
-function* write(data,id){
-  id.buffer.write(data);
-  if(id.target) while(id.buffer.size > 0){
-    yield id.target.push(
-      yield id.buffer.read(
-        id.type,
-        Math.min(id.size,id.buffer.size)
-      )
-    );
-  }
-}
-
-function* pack(buff,data,type){
-  var info,proto,id,brl;
-  
-  if(type){
-    info = com.info.get(type);
-    yield walk(info.packer,[buff,data]);
-    return;
-  }
-  
-  info = com.info.get(data);
-  
-  if(info && info.constant){
-    yield walk(pack,[buff,info.constant,Number]);
-    return;
-  }
-  
-  id = buff[internal];
-  
-  brl = id.bref.get(data);
-  if(brl){
-    yield walk(pack,[buff,0,Number]);
-    yield walk(pack,[buff,brl,Number]);
-    return;
-  }
-  
-  id.bref.set(data,id.nextBref++);
-  type = data.constructor;
-  
-  while(!((info = com.info.get(type)) && info.label)){
-    proto = Object.getPrototypeOf(type.prototype);
-    if(!proto) throw new TypeError('Unsupported type "' + data.constructor.name + '"');
-    type = proto.constructor;
-  }
-  
-  yield walk(pack,[buff,info.label,Number]);
-  yield walk(info.packer,[buff,data]);
-}
-
-function* packExport(data,type,target,chunkSize){
+module.exports = walk.wrap(function*(data,type,target,chunkSize){
   var buff = new WriteBuffer(),
       id = buff[internal];
   
@@ -102,9 +94,4 @@ function* packExport(data,type,target,chunkSize){
     return yield id.buffer.read(type);
   }
   
-}
-
-module.exports = function(data,type,target,chunkSize){
-  return walk(packExport,[data,type,target,chunkSize]);
-};
-
+});
