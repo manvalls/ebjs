@@ -1,4 +1,4 @@
-var com = require('./common.js'),
+var com = require('./main/common.js'),
     BinaryBuffer = require('binary-buffer'),
     walk = require('vz.walk'),
     Property = require('vz.property'),

@@ -1,4 +1,4 @@
-var com = require('./common.js');
+var com = require('./main/common.js');
 
 module.exports = function(){
   var data = arguments[0],
