@@ -8,7 +8,7 @@
     "vz.walk": "",
     "vz.yielded": "",
     "vz.rand": "",
-    "binary-buffer": ""
+    "binary-buffer": "^3"
   },
   "devDependencies": {
     "vz.test": "",
