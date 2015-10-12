@@ -1,113 +1,73 @@
-[![NPM](https://nodei.co/npm/ebjs.png?downloads=true)](https://nodei.co/npm/ebjs/)
+# Extensible Binary JavaScript Serialization [![Build Status][travis-img]][travis-url] [![Coverage Status][cover-img]][cover-url]
 
-This package uses or may use at some point in the future ECMAScript 6 features. Use it on a compatible environment or transpile it with Traceur, Closure Compiler, es6-transpiler or equivalent. Please note that some of these have flaws and bugs, test your code carefully until you find a suitable tool for your task.
+`ebjs` is an extensible and configurable serialization format with support for nearly as many different data types as numbers can be represented in JavaScript. It produces less bytes than JSON and can also serialize circular references.
 
-When cloning this repository, put the folder inside another named "node_modules" in order to avoid potential errors related to npm's dependency handling, and then run `npm install` on it.
-
-No piece of software is ever completed, feel free to contribute and be humble.
-
-# Extensible binary javascript serialization
-
-## Description
-
-This package is a tool which helps you define how your data is stored and transmitted based on javascript constructors. **It itself does not contain any definitions**. In order to use it you must at least define the *Number* type, you may get started by including basic definitions from [ebjs.basic](https://www.npmjs.org/package/ebjs.basic "ebjs.basic").
-
-## Packing and unpacking
-
-Once you've included definitions for the types you want, you can simply use *ebjs.pack* and *ebjs.unpack*:
-
-```javascript
-var ebjs = require('ebjs'),
-    walk = require('vz.walk');
-
-require('ebjs.basic');
-
-walk(function*(){
-  var buffer = yield ebjs.pack({foo: 'bar'});
-  data = yield ebjs.unpack(buffer);
-  
-  console.log(data); // {foo: 'bar'}
-});
-```
-
-## Defining new types
-
-Types are identified by an unsigned integer called *label*. Every type you define has an associated label, either declared by you or implicitly assigned by the library. You may use any label you want for your definitions, but for interoperability's sake labels from 0 to 100 are to be considered reserved. Its intended usage is as follows, and will be updated when new ones are assigned:
-
-- \[0\] Circular references
-- \[1-10\] *basic* group ([ebjs.basic](https://www.npmjs.org/package/ebjs.basic "ebjs.basic"))
-- \[11-20\] *extra* group ([ebjs.extra](https://www.npmjs.org/package/ebjs.extra "ebjs.extra"))
-
-When defining a new type you may omit the label, but it's highly discouraged, and if you do, make sure to include all labeled definitions before the unlabeled ones, as unlabeled definitions will be assigned the next free label. Also, you must specify a packer generator and an unpacker generator. Consider the following type:
-
-```javascript
-function Person(name,gender,age){
-  this.name = name + '';
-  this.gender = gender + '';
-  this.age = parseInt(age);
-}
-```
-
-It could be defined in the following way:
+## Basic pack / unpack
 
 ```javascript
 var ebjs = require('ebjs');
 
-ebjs.define(Person,200,function*(person){
-  
-  yield this.pack(String,person.name);
-  yield this.pack(String,person.gender);
-  yield this.pack(Number,person.age);
-  
-},function*(){
-  var name,gender,age;
-  
-  name = yield this.unpack(String);
-  gender = yield this.unpack(String);
-  age = yield this.unpack(Number);
-  
-  return new Person(name,gender,age);
-});
+ebjs.pack( {foo: 'bar'} ).
+  then( buffer => ebjs.unpack(buffer) ).
+  then( data => console.log(data) /* { foo: 'bar' } */ );
 ```
 
-With this definition, when calling *ebjs.pack* on a *Person* object, we will obtain a binary buffer with the label (200) packed as a *Number*, followed by the name packed as a *String* and the gender and the age both packed as a *Number*. The definitions of *String* and *Number* are what determines the actual bytes that are placed in each location. To demonstrate how to write bytes, we'll be defining the *Byte* type:
+Unlike most serialization libraries, `ebjs` works asynchronously, which means you can serialize almost everything, whether it can be accessed synchronously or not: both `ebjs.pack(data)` and `ebjs.unpack(buffer)` return a promise.
+
+`ebjs.pack(data)` resolves to either a `Buffer` or an `Uint8Array` with serialized data. An internal buffer of 1kB will be used unless you specify your own one as the second argument of the call, again, either a `Buffer` or an `Uint8Array`. Use `ebjs.unpack(buffer)` to get back the original data.
+
+## Adding new types
+
+Each data type is assigned a *label*, a number which will be packed into the resulting binary stream. This number will thus identify the data type and should be unique in your whole application. You can use any number you like - except for zero - but be warned that the first thousand labels should be considered reserved and will be assigned inside [definitions/labels.js](definitions/labels.js).
+
+That being said, there are two kinds of definitions. The firsts and easiest ones are constants:
+
+```
+var someSymbol = Symbol();
+
+ebjs.setConstant(1001,someSymbol);
+```
+
+That's it, you can now transmit `someSymbol`. Isn't it cool? Next we'll take a look at *packers* and *unpackers*. Suppose you want to serialize the following class:
 
 ```javascript
-function Byte(value){
-  var n;
-  
-  this.value =  Math.max(0,
-                  Math.min(255,
-                    isNaN(n = parseInt(value))?0:n
-                  )
-                );
-  
+var label = require('ebjs/label');
+
+class Person{
+
+  constructor(name,birthdate,gender){
+    this.name = name;
+    this.birthdate = new Date(birthdate);
+    this.isWoman = gender == 'woman';
+  }
+
+  get [label](){ return 1005; }
 }
 ```
 
-The definition of this type could be:
+Here we have a `String`, a `Date` and a `Boolean`. Let's define it:
 
 ```javascript
 var ebjs = require('ebjs');
 
-ebjs.define(Byte,201,function*(byte){
-  
-  yield this.write(new Buffer([byte.value]));
-  
-},function*(){
-  
-  return new Byte((yield this.read(1))[0]);
-  
+ebjs.setPacker(Person,function*(buffer,data){
+  yield buffer.pack(data.name, String);
+  yield buffer.pack(data.birthdate, Date);
+  yield buffer.pack(data.isWoman, Boolean);
+});
+
+ebjs.setUnpacker(Person,function*(buffer){
+  var name = yield buffer.unpack(String),
+      birthdate = yield buffer.unpack(Date),
+      isWoman = yield buffer.unpack(Boolean);
+
+  return new Person(name,birthdate,isWoman ? 'woman' : 'man');
 });
 ```
 
-You can also define things as constants. These definitions look like this:
+That's it! Now you can transmit `Person` instances. You can see more examples under the [definitions](definitions) folder.
 
-```javascript
-var ebjs = require('ebjs'),
-    someAwesomeObject = {};
-
-ebjs.define(someAwesomeObject,202);
-```
-
-With this definition, every time a pack operation happens on *someAwesomeObject* it will be packed as the 202 *Number*, and when unpacking, if the 202 label is found, *someAwesomeObject* is returned as the result of the operation.
+[travis-img]: https://travis-ci.org/manvalls/ebjs.svg?branch=master
+[travis-url]: https://travis-ci.org/manvalls/ebjs
+[cover-img]: https://coveralls.io/repos/manvalls/ebjs/badge.svg?branch=master&service=github
+[cover-url]: https://coveralls.io/github/manvalls/ebjs?branch=master

@@ -1,3 +1,11 @@
-exports.pack = require('./pack.js');
-exports.unpack = require('./unpack.js');
-exports.define = require('./define.js');
+var basic = require('./definitions/basic.js'),
+    extra = require('./definitions/extra.js'),
+    EbjsInstance = require('./instance.js'),
+    ebjs = new EbjsInstance();
+
+basic(ebjs);
+extra(ebjs);
+
+/*/ exports /*/
+
+module.exports = ebjs;
