@@ -1,3 +1,7 @@
+var label = require('../../label.js'),
+    labels = require('../labels.js');
+
+RegExp.prototype[label] = labels.RegExp;
 
 function* packer(buffer,data){
   var flags = 0;
@@ -8,15 +12,15 @@ function* packer(buffer,data){
   if(data.sticky)     flags |= 8;
   if(data.unicode)    flags |= 16;
 
-  yield buffer.pack(flags,Number);
-  yield buffer.pack(data.source,String);
-  yield buffer.pack(data.lastIndex,Number);
+  yield buffer.pack(flags,labels.Number);
+  yield buffer.pack(data.source,labels.String);
+  yield buffer.pack(data.lastIndex,labels.Number);
 }
 
 function* unpacker(buffer,ref){
   var re,flags = '',fn;
 
-  fn = yield buffer.unpack(Number);
+  fn = yield buffer.unpack(labels.Number);
 
   if(fn & 1)  flags += 'm';
   if(fn & 2)  flags += 'g';
@@ -24,13 +28,13 @@ function* unpacker(buffer,ref){
   if(fn & 8)  flags += 'y';
   if(fn & 16) flags += 'u';
 
-  re = new RegExp(yield buffer.unpack(String),flags);
-  re.lastIndex = yield buffer.unpack(Number);
+  re = new RegExp(yield buffer.unpack(labels.String),flags);
+  re.lastIndex = yield buffer.unpack(labels.Number);
 
   return re;
 }
 
 module.exports = function(ebjs){
-  ebjs.setPacker(RegExp,packer);
-  ebjs.setUnpacker(RegExp,unpacker);
+  ebjs.setPacker(labels.RegExp,packer);
+  ebjs.setUnpacker(labels.RegExp,unpacker);
 };

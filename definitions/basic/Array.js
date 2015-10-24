@@ -1,18 +1,22 @@
+var label = require('../../label.js'),
+    labels = require('../labels.js');
+
+Array.prototype[label] = labels.Array;
 
 function* packer(buffer,data){
-  yield buffer.pack(data.length,Number);
+  yield buffer.pack(data.length,labels.Number);
   for(var i = 0;i < data.length;i++) yield buffer.pack(data[i]);
 }
 
 function* unpacker(buffer,ref){
   var data = ref.set([]),
-      size = yield buffer.unpack(Number);
+      size = yield buffer.unpack(labels.Number);
 
   for(var i = 0;i < size;i++) data[i] = yield buffer.unpack();
   return data;
 }
 
 module.exports = function(ebjs){
-  ebjs.setPacker(Array,packer);
-  ebjs.setUnpacker(Array,unpacker);
+  ebjs.setPacker(labels.Array,packer);
+  ebjs.setUnpacker(labels.Array,unpacker);
 };

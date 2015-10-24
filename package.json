@@ -6,6 +6,7 @@
   "dependencies": {
     "y-lock": "",
     "y-walk": "",
+    "y-emitter": "",
     "binary-buffer": ""
   },
   "devDependencies": {

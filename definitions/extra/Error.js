@@ -1,36 +1,46 @@
+var label = require('../../label.js'),
+    labels = require('../labels.js');
+
+Error.prototype[label] = labels.Error;
+EvalError.prototype[label] = labels.EvalError;
+RangeError.prototype[label] = labels.RangeError;
+ReferenceError.prototype[label] = labels.ReferenceError;
+SyntaxError.prototype[label] = labels.SyntaxError;
+TypeError.prototype[label] = labels.TypeError;
+URIError.prototype[label] = labels.URIError;
 
 function* packer(buffer,data){
-  yield buffer.pack(data.name,String);
-  yield buffer.pack(data.message,String);
+  yield buffer.pack(data.name,labels.String);
+  yield buffer.pack(data.message,labels.String);
 }
 
 function* unpacker(buffer,ref){
-  var name = yield buffer.unpack(String),
-      error = new this(yield buffer.unpack(String));
+  var name = yield buffer.unpack(labels.String),
+      error = new this(yield buffer.unpack(labels.String));
 
   error.name = name;
   return error;
 }
 
 module.exports = function(ebjs){
-  ebjs.setPacker(Error,packer,Error);
-  ebjs.setUnpacker(Error,unpacker,Error);
+  ebjs.setPacker(labels.Error,packer,Error);
+  ebjs.setUnpacker(labels.Error,unpacker,Error);
 
-  ebjs.setPacker(EvalError,packer,EvalError);
-  ebjs.setUnpacker(EvalError,unpacker,EvalError);
+  ebjs.setPacker(labels.EvalError,packer,EvalError);
+  ebjs.setUnpacker(labels.EvalError,unpacker,EvalError);
 
-  ebjs.setPacker(RangeError,packer,RangeError);
-  ebjs.setUnpacker(RangeError,unpacker,RangeError);
+  ebjs.setPacker(labels.RangeError,packer,RangeError);
+  ebjs.setUnpacker(labels.RangeError,unpacker,RangeError);
 
-  ebjs.setPacker(ReferenceError,packer,ReferenceError);
-  ebjs.setUnpacker(ReferenceError,unpacker,ReferenceError);
+  ebjs.setPacker(labels.ReferenceError,packer,ReferenceError);
+  ebjs.setUnpacker(labels.ReferenceError,unpacker,ReferenceError);
 
-  ebjs.setPacker(SyntaxError,packer,SyntaxError);
-  ebjs.setUnpacker(SyntaxError,unpacker,SyntaxError);
+  ebjs.setPacker(labels.SyntaxError,packer,SyntaxError);
+  ebjs.setUnpacker(labels.SyntaxError,unpacker,SyntaxError);
 
-  ebjs.setPacker(TypeError,packer,TypeError);
-  ebjs.setUnpacker(TypeError,unpacker,TypeError);
+  ebjs.setPacker(labels.TypeError,packer,TypeError);
+  ebjs.setUnpacker(labels.TypeError,unpacker,TypeError);
 
-  ebjs.setPacker(URIError,packer,URIError);
-  ebjs.setUnpacker(URIError,unpacker,URIError);
+  ebjs.setPacker(labels.URIError,packer,URIError);
+  ebjs.setUnpacker(labels.URIError,unpacker,URIError);
 };

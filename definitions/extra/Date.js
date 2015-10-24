@@ -1,13 +1,17 @@
+var label = require('../../label.js'),
+    labels = require('../labels.js');
+
+Date.prototype[label] = labels.Date;
 
 function* packer(buffer,data){
-  yield buffer.pack(data.getTime(),Number);
+  yield buffer.pack(data.getTime(),labels.Number);
 }
 
 function* unpacker(buffer,ref){
-  return new Date(yield buffer.unpack(Number));
+  return new Date(yield buffer.unpack(labels.Number));
 }
 
 module.exports = function(ebjs){
-  ebjs.setPacker(Date,packer);
-  ebjs.setUnpacker(Date,unpacker);
+  ebjs.setPacker(labels.Date,packer);
+  ebjs.setUnpacker(labels.Date,unpacker);
 };

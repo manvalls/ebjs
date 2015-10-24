@@ -1,4 +1,8 @@
-var util = require('./Number/util.js');
+var util = require('./Number/util.js'),
+    label = require('../../label.js'),
+    labels = require('../labels.js');
+
+Number.prototype[label] = labels.Number;
 
 function* packer(buffer,data){
 
@@ -77,6 +81,6 @@ function* unpacker(buffer,ref){
 }
 
 module.exports = function(ebjs){
-  ebjs.setPacker(Number,packer);
-  ebjs.setUnpacker(Number,unpacker);
+  ebjs.setPacker(labels.Number,packer);
+  ebjs.setUnpacker(labels.Number,unpacker);
 };

@@ -54,6 +54,7 @@ function* unpackIt(label,ebjs,ref,refs,buffer){
   }
 
   unpacker = ebjs.getUnpacker(label);
+  if(!unpacker) throw new TypeError('Unsupported label ' + label);
   return ref.set(yield walk(unpacker[0],[buffer,ref],unpacker[1]));
 }
 
