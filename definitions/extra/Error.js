@@ -9,6 +9,15 @@ SyntaxError.prototype[label] = labels.SyntaxError;
 TypeError.prototype[label] = labels.TypeError;
 URIError.prototype[label] = labels.URIError;
 
+Object.defineProperty(Error.prototype,label,{value: labels.Error});
+Object.defineProperty(EvalError.prototype,label,{value: labels.EvalError});
+Object.defineProperty(RangeError.prototype,label,{value: labels.RangeError});
+Object.defineProperty(ReferenceError.prototype,label,{value: labels.ReferenceError});
+Object.defineProperty(SyntaxError.prototype,label,{value: labels.SyntaxError});
+Object.defineProperty(TypeError.prototype,label,{value: labels.TypeError});
+Object.defineProperty(URIError.prototype,label,{value: labels.URIError});
+
+
 function* packer(buffer,data){
   yield buffer.pack(data.name,labels.String);
   yield buffer.pack(data.message,labels.String);

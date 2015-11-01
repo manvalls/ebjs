@@ -10,8 +10,8 @@ module.exports = function(ebjs){
   function testValues(values){
 
     for(v of values){
-      assert.deepStrictEqual(transform(v),v);
-      if(typeof v == 'number') assert.deepStrictEqual(transform(-v),-v);
+      assert.deepEqual(transform(v),v);
+      if(typeof v == 'number') assert.deepEqual(transform(-v),-v);
     }
 
   }

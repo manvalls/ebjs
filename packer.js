@@ -3,7 +3,7 @@
 var BinaryBuffer = require('binary-buffer'),
     Lock = require('y-lock'),
     walk = require('y-walk'),
-    Buffer = require('./buffers/write.js'),
+    WriteBuffer = require('./buffers/write.js'),
 
     lock = Symbol(),
     wb = Symbol(),
@@ -14,7 +14,7 @@ class Packer{
   constructor(ebjs){
     this[lock] = new Lock();
     this[bb] = new BinaryBuffer();
-    this[wb] = new Buffer(this[bb],ebjs);
+    this[wb] = new WriteBuffer(this[bb],ebjs);
   }
 
   read(buffer){
@@ -28,7 +28,7 @@ class Packer{
   get timesFlushed(){
     return this[bb].timesFlushed;
   }
-  
+
 }
 
 function* packIt(data,wb,lock,bb){

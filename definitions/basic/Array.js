@@ -1,7 +1,7 @@
 var label = require('../../label.js'),
     labels = require('../labels.js');
 
-Array.prototype[label] = labels.Array;
+Object.defineProperty(Array.prototype,label,{value: labels.Array});
 
 function* packer(buffer,data){
   yield buffer.pack(data.length,labels.Number);

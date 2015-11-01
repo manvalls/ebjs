@@ -3,7 +3,7 @@
 var BinaryBuffer = require('binary-buffer'),
     Lock = require('y-lock'),
     walk = require('y-walk'),
-    Buffer = require('./buffers/read.js'),
+    ReadBuffer = require('./buffers/read.js'),
 
     lock = Symbol(),
     rb = Symbol(),
@@ -14,7 +14,7 @@ class Unpacker{
   constructor(ebjs){
     this[lock] = new Lock();
     this[bb] = new BinaryBuffer();
-    this[rb] = new Buffer(this[bb],ebjs);
+    this[rb] = new ReadBuffer(this[bb],ebjs);
   }
 
   write(buffer){

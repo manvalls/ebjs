@@ -1,5 +1,5 @@
 if(global.Buffer) module.exports = function(data){
-  data = new Buffer(data);
+  data = new global.Buffer(data);
   return data.toString('utf-8');
 };
 else if(global.TextDecoder) module.exports = function(data){

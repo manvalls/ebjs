@@ -2,7 +2,7 @@ var util = require('./Number/util.js'),
     label = require('../../label.js'),
     labels = require('../labels.js');
 
-Number.prototype[label] = labels.Number;
+Object.defineProperty(Number.prototype,label,{value: labels.Number});
 
 function* packer(buffer,data){
 
