@@ -4,7 +4,7 @@ var ebjs = require('../../main.js'),
     s = Symbol(),
     child;
 
-t(global.navigator ? 'browser' : 'node.js - ' + (global.Buffer ? 'Buffer' : 'raw'),function(){
+t(global.navigator ? 'Browser' : 'node.js - ' + (global.Buffer ? 'Buffer' : 'raw'),function(){
   require('./basic.js')(ebjs);
   require('./extra.js')(ebjs);
 
