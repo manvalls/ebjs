@@ -22,20 +22,25 @@ class Unpacker{
   }
 
   unpack(){
-    return walk(unpackIt,[this[rb],this[lock]]);
+    return walk(unpackIt,[this[rb],this[lock],this[bb]]);
   }
 
   get timesFlushed(){
     return this[bb].timesFlushed;
   }
 
+  get bytesSinceFlushed(){
+    return this[bb].bytesSinceFlushed;
+  }
+
 }
 
-function* unpackIt(rb,lock){
+function* unpackIt(rb,lock,bb){
   var data;
 
   yield lock.take();
   data = yield rb.unpack();
+  bb.fakeFlush();
   lock.give();
 
   return data;

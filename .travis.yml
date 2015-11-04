@@ -6,4 +6,4 @@ before_install:
   - "sh -e /etc/init.d/xvfb start"
 language: node_js
 node_js:
-  - "4.2"
+  - "5.0"

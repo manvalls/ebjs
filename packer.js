@@ -29,13 +29,17 @@ class Packer{
     return this[bb].timesFlushed;
   }
 
+  get bytesSinceFlushed(){
+    return this[bb].bytesSinceFlushed;
+  }
+
 }
 
 function* packIt(data,wb,lock,bb){
   yield lock.take();
   yield wb.pack(data);
-  lock.give();
   bb.flush();
+  lock.give();
 }
 
 /*/ exports /*/
