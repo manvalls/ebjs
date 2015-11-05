@@ -18,7 +18,9 @@ Unlike most serialization libraries, `ebjs` works asynchronously, which means yo
 
 ## Adding new types
 
-Each data type is assigned a *label*, a number which will be packed into the resulting binary stream. This number will thus identify the data type and should be unique in your whole application. You can use any number you like - except for zero - but be warned that the first thousand labels should be considered reserved and will be assigned inside [definitions/labels.js](definitions/labels.js).
+Each data type is assigned a *label*, a number which will be packed into the resulting binary stream. This number will thus identify the data type and should be unique in your whole application. You can use any number you like - except for zero.
+
+A non-normative list of common labels can be found inside [definitions/labels.js](definitions/labels.js). You may want to take a look at it in order to avoid collisions with other libraries. If you want your own data type in that list feel free to file an issue and we'll discuss the label.
 
 That being said, there are two kinds of definitions. The firsts and easiest ones are constants:
 

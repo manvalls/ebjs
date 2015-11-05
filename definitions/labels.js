@@ -1,26 +1,27 @@
+var l = exports;
 
 /*/--- basic ---/*/
 
-exports.Number =                    1;
-exports.Boolean =                   2;
-exports.String =                    3;
-exports.Object =                    4;
-exports.Array =                     5;
-exports.null =                      6;
-exports.undefined =                 7;
-exports.Connection =                8;
-/** RESERVED **/                    9;
-/** RESERVED **/                    10;
+l.Number =                    1;
+l.Boolean =                   2;
+l.String =                    3;
+l.Object =                    4;
+l.Array =                     5;
+l.null =                      6;
+l.undefined =                 7;
+l.Connection =                8;
+/** RESERVED **/              9;
+/** RESERVED **/              10;
 
 /*/--- extra ---/*/
 
-exports.Date =                      11;
-exports.RegExp =                    12;
-exports.Error =                     13;
-exports.EvalError =                 14;
-exports.RangeError =                15;
-exports.ReferenceError =            16;
-exports.SyntaxError =               17;
-exports.TypeError =                 18;
-exports.URIError =                  19;
-/** RESERVED **/                    20;
+l.Date =                      11;
+l.RegExp =                    12;
+l.Error =                     13;
+l.EvalError =                 14;
+l.RangeError =                15;
+l.ReferenceError =            16;
+l.SyntaxError =               17;
+l.TypeError =                 18;
+l.URIError =                  19;
+/** RESERVED **/              20;
