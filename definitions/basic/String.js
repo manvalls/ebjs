@@ -6,7 +6,7 @@ var getBytes = require('./String/getBytes.js'),
 Object.defineProperty(String.prototype,label,{value: labels.String});
 
 function* packer(buffer,data){
-  var bytes = getBytes(data);
+  var bytes = getBytes(data + '');
 
   yield buffer.pack(bytes.length,labels.Number);
   yield buffer.write(bytes);

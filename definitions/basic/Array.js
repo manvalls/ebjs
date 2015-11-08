@@ -4,8 +4,11 @@ var label = require('../../label.js'),
 Object.defineProperty(Array.prototype,label,{value: labels.Array});
 
 function* packer(buffer,data){
-  yield buffer.pack(data.length,labels.Number);
-  for(var i = 0;i < data.length;i++) yield buffer.pack(data[i]);
+  var length = data.length,
+      i;
+
+  yield buffer.pack(length,labels.Number);
+  for(i = 0;i < length;i++) yield buffer.pack(data[i]);
 }
 
 function* unpacker(buffer,ref){

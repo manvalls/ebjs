@@ -13,12 +13,18 @@ do
   fi
 done
 
-istanbul report --root ./coverage/ lcovonly text-summary
-
-if [[ $DO_NOT_COVER != 'TRUE' ]]
+if [[ $DEBUG != 'TRUE' ]]
 then
-  cat ./coverage/lcov.info | coveralls
+  istanbul report --root ./coverage/ lcovonly text-summary
+  
+  if [[ $DO_NOT_COVER != 'TRUE' ]]
+  then
+    cat ./coverage/lcov.info | coveralls
+  fi
+
+  rm -rf ./coverage
+else
+  istanbul report --root ./coverage/
 fi
 
-rm -rf ./coverage
 exit $rc

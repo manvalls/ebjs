@@ -4,7 +4,8 @@ var label = require('../../label.js'),
 Object.defineProperty(Object.prototype,label,{value: labels.Object});
 
 function* packer(buffer,data){
-  var keys = Object.keys(data),i;
+  var keys = Object.keys(data),
+      i;
 
   yield buffer.pack(keys.length,labels.Number);
 

@@ -7,7 +7,7 @@
     "y-lock": "",
     "y-walk": "",
     "y-emitter": "",
-    "binary-buffer": ""
+    "binary-buffer": "^4"
   },
   "devDependencies": {
     "u-test": "",

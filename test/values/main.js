@@ -7,6 +7,7 @@ var ebjs = require('../../main.js'),
 t(global.navigator ? 'Browser' : 'node.js - ' + (global.Buffer ? 'Buffer' : 'raw'),function(){
   require('./basic.js')(ebjs);
   require('./extra.js')(ebjs);
+  require('./binary.js')(ebjs);
 
   child = ebjs.getChild();
   child.setConstant(4e3,NaN);
