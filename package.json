@@ -4,15 +4,15 @@
   "description": "Extensible Binary JavaScript Serialization",
   "main": "main.js",
   "dependencies": {
-    "y-lock": "",
-    "y-walk": "",
-    "y-emitter": "",
-    "binary-buffer": "^4"
+    "binary-buffer": "^4.3.1",
+    "y-emitter": "^8.0.1",
+    "y-lock": "^2.0.3",
+    "y-walk": "^10.0.0"
   },
   "devDependencies": {
-    "u-test": "",
-    "istanbul": "",
-    "coveralls": "^2"
+    "coveralls": "^2.11.4",
+    "istanbul": "^0.4.0",
+    "u-test": "^2.2.3"
   },
   "scripts": {
     "test": "bash test.sh"
