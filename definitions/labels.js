@@ -41,7 +41,7 @@ l.Float64Array =              30;
 l.Buffer =                    31;
 l.Blob =                      32;
 l.File =                      33;
-/** RESERVED **/              34;
+l.FileList =                  34;
 /** RESERVED **/              35;
 /** RESERVED **/              36;
 /** RESERVED **/              37;

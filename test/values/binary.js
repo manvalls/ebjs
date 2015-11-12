@@ -81,4 +81,27 @@ module.exports = function(ebjs){
     assert.strictEqual(result.isClosed,true);
   });
 
+  if(global.FileList) t('FileList',function*(){
+    var fl = Object.create(FileList.prototype,{length: {value: 2}}),
+        result;
+
+    fl[0] = new File(['foo'],'');
+    fl[1] = new File(['bar'],'');
+
+    result = yield transform(fl);
+    assert.strictEqual(result.length,2);
+    assert.strictEqual(yield read(result[0]),'foo');
+    assert.strictEqual(yield read(result[1]),'bar');
+  });
+
+  else if(global.Buffer)t('FileList',function*(){
+    var result = yield ebjs.unpack(new Uint8Array(
+      [34,2,0,248,0,208,155,181,215,15,117,66,0,0,3,102,111,111,0,248,0,208,155,181,215,15,117,66,0,0,3,98,97,114]
+    ));
+
+    assert.strictEqual(result.length,2);
+    assert.strictEqual(result[0].toString(),'foo');
+    assert.strictEqual(result[1].toString(),'bar');
+  });
+
 };
