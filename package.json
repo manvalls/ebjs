@@ -13,7 +13,7 @@
   "devDependencies": {
     "coveralls": "^2.11.4",
     "istanbul": "^0.4.0",
-    "u-test": "^2.2.3"
+    "u-test": "^3.0.0"
   },
   "scripts": {
     "test": "bash test.sh"

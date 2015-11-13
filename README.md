@@ -1,4 +1,4 @@
-# Extensible Binary JavaScript Serialization [![Build Status][travis-img]][travis-url] [![Coverage Status][cover-img]][cover-url]
+# Extensible Binary JavaScript Serialization [![Build Status][ci-img]][ci-url] [![Coverage Status][cover-img]][cover-url]
 
 `ebjs` is an extensible and configurable serialization format with support for nearly as many different data types as numbers can be represented in JavaScript. It produces less bytes than JSON and can also serialize circular references.
 
@@ -69,7 +69,7 @@ ebjs.setUnpacker(Person,function*(buffer){
 
 That's it! Now you can transmit `Person` instances. You can see more examples under the [definitions](definitions) folder.
 
-[travis-img]: https://travis-ci.org/manvalls/ebjs.svg?branch=master
-[travis-url]: https://travis-ci.org/manvalls/ebjs
+[ci-img]: https://circleci.com/gh/manvalls/ebjs.svg?style=shield
+[ci-url]: https://circleci.com/gh/manvalls/ebjs
 [cover-img]: https://coveralls.io/repos/manvalls/ebjs/badge.svg?branch=master&service=github
 [cover-url]: https://coveralls.io/github/manvalls/ebjs?branch=master
