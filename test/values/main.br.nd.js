@@ -2,9 +2,14 @@ var ebjs = require('../../main.js'),
     t = require('u-test'),
     assert = require('assert'),
     s = Symbol(),
-    child;
+    child,desc;
 
-t(global.navigator ? 'Browser' : 'node.js - ' + (global.Buffer ? 'Buffer' : 'raw'),function(){
+desc = 'Values - ';
+if(global.navigator) desc += 'browser';
+else if(global.Buffer) desc += 'node.js with buffers';
+else desc += 'node.js without buffers';
+
+t(desc,function(){
   require('./basic.js')(ebjs);
   require('./extra.js')(ebjs);
   require('./binary.js')(ebjs);

@@ -3,7 +3,7 @@ var t = require('u-test'),
     Connection = require('../connection'),
     label = require('../label.js');
 
-t('Connection',function*(){
+t('Connection - ' + (global.navigator ? 'browser' : 'node.js'),function*(){
   var conn = new Connection(),
       msg;
 
@@ -23,7 +23,7 @@ t('Connection',function*(){
         msg = m;
       });
       conn.end.send({foo: 'bar'});
-      assert.deepStrictEqual(msg,{foo: 'bar'});
+      assert.deepEqual(msg,{foo: 'bar'});
     });
 
   });

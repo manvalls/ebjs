@@ -13,10 +13,10 @@
   "devDependencies": {
     "coveralls": "^2.11.4",
     "istanbul": "^0.4.0",
-    "u-test": "^3.0.0"
+    "u-test": "^3.1.0"
   },
   "scripts": {
-    "test": "bash test.sh"
+    "test": "u-test"
   },
   "repository": {
     "type": "git",
