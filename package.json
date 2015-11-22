@@ -5,6 +5,7 @@
   "main": "main.js",
   "dependencies": {
     "binary-buffer": "^4.3.1",
+    "detacher": "^1.4.3",
     "y-emitter": "^8.0.1",
     "y-lock": "^2.0.3",
     "y-resolver": "^6.1.1",
