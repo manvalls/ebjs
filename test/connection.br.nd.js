@@ -74,4 +74,6 @@ t('Connection - ' + (global.navigator ? 'browser' : 'node.js'),function*(){
 
   });
 
+  require('./connection/link.js');
+
 });

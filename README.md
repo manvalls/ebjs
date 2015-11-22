@@ -1,4 +1,5 @@
-# Extensible Binary JavaScript Serialization [![Build Status][ci-img]][ci-url] [![Coverage Status][cover-img]][cover-url]
+# Extensible Binary JavaScript Serialization
+[![Build Status][ci-img]][ci-url] [![Coverage Status][cover-img]][cover-url]
 
 `ebjs` is an extensible and configurable serialization format with support for nearly as many different data types as numbers can be represented in JavaScript. It produces less bytes than JSON and can also serialize circular references.
 

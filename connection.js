@@ -27,10 +27,14 @@ class Connection extends Target{
   }
 
   detach(){
-    this[emitter].set('detached');
-    this[end][emitter].set('detached');
+    var e = this[end];
+
+    if(!e) return;
     this[end][end] = null;
     this[end] = null;
+
+    this[emitter].set('detached');
+    e[emitter].set('detached');
   }
 
   get end(){ return this[end]; }

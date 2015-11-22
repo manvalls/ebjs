@@ -55,28 +55,19 @@ class EbjsInstance{
     var l = this[labels];
 
     if(l.has(constant)) return l.get(constant);
-
-    if(this[parent]){
-      l = this[parent][labels];
-      if(l.has(constant)) return l.get(constant);
-    }
-
+    if(this[parent]) return this[parent].getLabel(constant);
   }
 
   getConstant(label){
     var c = this[constants];
 
     if(c.has(label)) return c.get(label);
-    if(this[parent]){
-      c = this[parent][constants];
-      if(c.has(label)) return c.get(label);
-    }
-
+    if(this[parent]) return this[parent].getConstant(label);
   }
 
   hasConstant(label){
     if(this[constants].has(label)) return true;
-    if(this[parent] && this[parent][constants].has(label)) return true;
+    if(this[parent]) return this[parent].hasConstant(label);
     return false;
   }
 
@@ -85,12 +76,7 @@ class EbjsInstance{
 
     if(typeof label != 'number') label = label.prototype[labelProp];
     if(p.has(label)) return p.get(label);
-
-    if(this[parent]){
-      p = this[parent][packers];
-      if(p.has(label)) return p.get(label);
-    }
-
+    if(this[parent]) return this[parent].getPacker(label);
   }
 
   getUnpacker(label){
@@ -98,12 +84,7 @@ class EbjsInstance{
 
     if(typeof label != 'number') label = label.prototype[labelProp];
     if(u.has(label)) return u.get(label);
-
-    if(this[parent]){
-      u = this[parent][unpackers];
-      if(u.has(label)) return u.get(label);
-    }
-
+    if(this[parent]) return this[parent].getUnpacker(label);
   }
 
   // Setters
