@@ -21,8 +21,9 @@ class Connection extends Target{
 
   }
 
-  send(message){
+  send(message,silent){
     if(!this[end]) throw new Error('Cannot send a message through a detached connection');
+    if(!silent) walk(sendMsg,[this[emitter],this,message]);
     return walk(giveMsg,[this[end][emitter],this[end],message]);
   }
 
@@ -47,6 +48,11 @@ class Connection extends Target{
 function* giveMsg(emitter,target,message){
   yield target.untilNext('message').listeners.gt(0);
   emitter.give('message',message);
+}
+
+function* sendMsg(emitter,target,message){
+  yield target.untilNext('send').listeners.gt(0);
+  emitter.give('send',message);
 }
 
 /*/ exports /*/

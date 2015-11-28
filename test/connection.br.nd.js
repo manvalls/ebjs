@@ -74,6 +74,34 @@ t('Connection - ' + (global.navigator ? 'browser' : 'node.js'),function*(){
 
   });
 
+  t('"send" event',function(){
+
+    t('Silent',function(){
+      var conn = new Connection(),
+          msg = null;
+
+      conn.once('send',function(m){
+        msg = m;
+      });
+
+      conn.send('foo',true);
+      assert.strictEqual(msg,null);
+    });
+
+    t('Not silent',function*(){
+      var conn = new Connection(),
+          msg = null;
+
+      conn.once('send',function(m){
+        msg = m;
+      });
+
+      conn.send('foo');
+      assert.strictEqual(msg,'foo');
+    });
+
+  });
+
   require('./connection/link.js');
 
 });
