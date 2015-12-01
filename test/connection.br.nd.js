@@ -7,21 +7,38 @@ t('Connection - ' + (global.navigator ? 'browser' : 'node.js'),function*(){
   var conn = new Connection(),
       msg;
 
+  conn.open();
+  conn.end.open();
+
   t('Send and receive message',function(){
 
     t('to end',function(){
+      var error;
+
       assert.strictEqual(conn[label],8);
-      conn.send('foo');
       conn.end.on('message',function(m){
         msg = m;
       });
+
+      conn.send('foo');
       assert.strictEqual(msg,'foo');
+
+      try{ conn.end.open(); }
+      catch(e){ error = e; }
+      assert(!!error);
+
+      error = null;
+      try{ conn.end.lock(); }
+      catch(e){ error = e; }
+      assert(!!error);
     });
 
     t('from end',function(){
+
       conn.on('message',function(m){
         msg = m;
       });
+
       conn.end.send({foo: 'bar'});
       assert.deepEqual(msg,{foo: 'bar'});
     });
@@ -32,8 +49,9 @@ t('Connection - ' + (global.navigator ? 'browser' : 'node.js'),function*(){
 
     t('to end',function(){
       var conn = new Connection(),
-          wrong;
+          wrong,error;
 
+      conn.detach();
       conn.detach();
 
       try{
@@ -49,6 +67,16 @@ t('Connection - ' + (global.navigator ? 'browser' : 'node.js'),function*(){
       }catch(e){}
 
       assert(!wrong);
+      conn.detach();
+
+      try{ conn.open(); }
+      catch(e){ error = e; }
+      assert(!!error);
+
+      error = null;
+      try{ conn.lock(); }
+      catch(e){ error = e; }
+      assert(!!error);
     });
 
     t('from end',function(){
@@ -70,36 +98,62 @@ t('Connection - ' + (global.navigator ? 'browser' : 'node.js'),function*(){
       }catch(e){}
 
       assert(!wrong);
+      conn.detach();
     });
 
   });
 
-  t('"send" event',function(){
+  t('connection.lock()',function(){
 
-    t('Silent',function(){
+    t('Receive messages',function(){
       var conn = new Connection(),
-          msg = null;
+          msg,error;
 
-      conn.once('send',function(m){
+      conn.end.lock().on('message',function(m){
         msg = m;
       });
 
-      conn.send('foo',true);
-      assert.strictEqual(msg,null);
-    });
-
-    t('Not silent',function*(){
-      var conn = new Connection(),
-          msg = null;
-
-      conn.once('send',function(m){
-        msg = m;
-      });
-
+      conn.open();
       conn.send('foo');
       assert.strictEqual(msg,'foo');
+
+      error = null;
+      try{ conn.end.lock(); }
+      catch(e){ error = e; }
+      assert(!!error);
+
+      error = null;
+      try{ conn.end.open(); }
+      catch(e){ error = e; }
+      assert(!!error);
+
+      error = null;
+      try{ conn.end.send('asd'); }
+      catch(e){ error = e; }
+      assert(!!error);
     });
 
+  });
+
+  t('Send messages',function(){
+    var conn = new Connection(),
+        sender = conn.lock(),
+        msg,error;
+
+    conn.end.on('message',function(m){
+      msg = m;
+    });
+
+    conn.end.open();
+    sender.send('foo');
+    assert.strictEqual(msg,'foo');
+
+    conn.end.send('bar');
+    conn.detach();
+
+    try{ sender.send('foo'); }
+    catch(e){ error = e; }
+    assert(!!error);
   });
 
   require('./connection/link.js');

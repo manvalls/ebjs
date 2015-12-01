@@ -42,6 +42,9 @@ getSubPair = walk.wrap(function*(constraints){
       sc2;
 
   sc2 = c2.until('message');
+  c1.open();
+  c2.open();
+
   c1.send(sc1.end);
   sc2 = yield sc2;
 
@@ -56,6 +59,9 @@ getSubSubPair = walk.wrap(function*(constraints){
       sc2;
 
   sc2 = c2.until('message');
+  c1.open();
+  c2.open();
+
   c1.send(sc1.end);
   sc2 = yield sc2;
 
@@ -75,6 +81,9 @@ function sendTest(getConns){
         c2 = conns[1],
         msg;
 
+    c1.open();
+    c2.open();
+
     msg = c2.until('message');
     c1.send('foo');
     assert.strictEqual(yield msg,'foo');
@@ -91,6 +100,9 @@ function detachTest(getConns){
         c1 = conns[0],
         c2 = conns[1],
         msg;
+
+    c1.open();
+    c2.open();
 
     assert(!c1.is('detached'));
     assert(!c2.is('detached'));
@@ -120,6 +132,9 @@ function detachParentTest(getConns){
         p1 = conns[2],
         p2 = conns[3];
 
+    c1.open();
+    c2.open();
+
     p1.detach();
     yield wait(500);
 
@@ -139,6 +154,9 @@ function constraintsTest(getConns,level){
           c2 = conns[1],
           msg;
 
+      c1.open();
+      c2.open();
+
       msg = c2.until('message');
       c1.send(new ArrayBuffer(50));
       assert.strictEqual((yield msg).byteLength,50);
@@ -154,6 +172,9 @@ function constraintsTest(getConns,level){
           c1 = conns[0],
           c2 = conns[1],
           conn;
+
+      c1.open();
+      c2.open();
 
       conn = new Connection();
       conn.detach();

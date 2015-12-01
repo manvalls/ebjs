@@ -28,10 +28,12 @@ function linkConn(conn,opt){
   obj.packer = obj.instance.createPacker();
   obj.unpacker = obj.instance.createUnpacker();
 
+  obj.agent = conn.end.lock();
+
   obj.collection.add(
-    conn.end.on('message',onMessage,obj.packer),
-    conn.end.once('detached',onceDetached,obj.collection,obj.connections.in,obj.connections.out),
-    walk(processUnpacker,[obj.unpacker,obj.packer,conn.end,obj.connections,obj.constraints])
+    obj.agent.on('message',onMessage,obj.packer),
+    obj.agent.once('detached',onceDetached,obj.collection,obj.connections.in,obj.connections.out),
+    walk(processUnpacker,[obj.unpacker,obj.packer,obj.agent,obj.connections,obj.constraints])
   );
 
   return {
@@ -49,7 +51,7 @@ function* processUnpacker(unpacker,packer,conn,connections,constraints){
 
   while(true){
     data = yield unpacker.unpack();
-
+    if(conn.is('detached')) return;
     if(data instanceof Array) switch(data.length){
 
       case 1:
