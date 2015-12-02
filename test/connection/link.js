@@ -13,7 +13,7 @@ pipe = walk.wrap(function*(packer,unpacker){
 
   while(true){
     data = yield packer.read(1e3);
-    yield wait(100);
+    yield wait(10);
     unpacker.write(data);
   }
 
@@ -68,6 +68,81 @@ getSubSubPair = walk.wrap(function*(constraints){
   return [sc1,sc2,c1,c2];
 });
 
+getBridge = walk.wrap(function*(constraints){
+  var conns1 = yield getPair(constraints),
+      conns2 = yield getPair(constraints),
+      c11 = conns1[0],
+      c12 = conns1[1],
+      c21 = conns2[0],
+      c22 = conns2[1],
+      tempConn = new Connection();
+
+  c11.open();
+  c12.open();
+  c21.open();
+  c22.open();
+
+  c11.send(tempConn);
+  c21.send(tempConn.end);
+
+  return [
+    yield c12.until('message'),
+    yield c22.until('message'),
+    c11,
+    c12
+  ];
+});
+
+getSubBridge = walk.wrap(function*(constraints){
+  var conns1 = yield getBridge(constraints),
+      conns2 = yield getBridge(constraints),
+      c11 = conns1[0],
+      c12 = conns1[1],
+      c21 = conns2[0],
+      c22 = conns2[1],
+      tempConn = new Connection();
+
+  c11.open();
+  c12.open();
+  c21.open();
+  c22.open();
+
+  c11.send(tempConn);
+  c21.send(tempConn.end);
+
+  return [
+    yield c12.until('message'),
+    yield c22.until('message'),
+    c11,
+    c12
+  ];
+});
+
+getSubconnectionBridge = walk.wrap(function*(constraints){
+  var conns1 = yield getSubPair(constraints),
+      conns2 = yield getSubPair(constraints),
+      c11 = conns1[0],
+      c12 = conns1[1],
+      c21 = conns2[0],
+      c22 = conns2[1],
+      tempConn = new Connection();
+
+  c11.open();
+  c12.open();
+  c21.open();
+  c22.open();
+
+  c11.send(tempConn);
+  c21.send(tempConn.end);
+
+  return [
+    yield c12.until('message'),
+    yield c22.until('message'),
+    c11,
+    c12
+  ];
+});
+
 function detach(e,d,c){
   c.detach();
 }
@@ -107,7 +182,7 @@ function detachTest(getConns){
     assert(!c1.is('detached'));
     assert(!c2.is('detached'));
     c1.detach();
-    yield wait(200);
+    yield wait(500);
     assert(c1.is('detached'));
     assert(c2.is('detached'));
 
@@ -118,7 +193,7 @@ function detachTest(getConns){
     assert(!c1.is('detached'));
     assert(!c2.is('detached'));
     c2.detach();
-    yield wait(200);
+    yield wait(500);
     assert(c1.is('detached'));
     assert(c2.is('detached'));
   };
@@ -162,7 +237,7 @@ function constraintsTest(getConns,level){
       assert.strictEqual((yield msg).byteLength,50);
 
       c1.send(new ArrayBuffer(10e3));
-      yield wait(500);
+      yield wait(1000);
       assert(c1.is('detached'));
       assert(c2.is('detached'));
     });
@@ -226,6 +301,42 @@ t('link',function(){
       t('Parent connection detaching',detachParentTest(getSubSubPair));
 
       t('Constraints',constraintsTest(getSubSubPair,2));
+
+    });
+
+  });
+
+  t('Bridge',function(){
+
+    t('Basic send and receive',sendTest(getBridge));
+
+    t('Basic detaching',detachTest(getBridge));
+
+    t('Parent connection detaching',detachParentTest(getBridge));
+
+    t('Constraints',constraintsTest(getBridge,1));
+
+    t('Subconnection',function(){
+
+      t('Basic send and receive',sendTest(getSubconnectionBridge));
+
+      t('Basic detaching',detachTest(getSubconnectionBridge));
+
+      t('Parent connection detaching',detachParentTest(getSubconnectionBridge));
+
+      t('Constraints',constraintsTest(getSubconnectionBridge,2));
+
+    });
+
+    t('Subbridge',function(){
+
+      t('Basic send and receive',sendTest(getSubBridge));
+
+      t('Basic detaching',detachTest(getSubBridge));
+
+      t('Parent connection detaching',detachParentTest(getSubBridge));
+
+      t('Constraints',constraintsTest(getSubBridge,2));
 
     });
 

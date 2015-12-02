@@ -3,6 +3,7 @@ var walk = require('y-walk'),
 
     ebjs = require('../main.js'),
     Connection = require('../connection.js'),
+    parentData = 'ElKPs-yqyhY',
 
     IN = 0,
     OUT = 1;
@@ -46,12 +47,34 @@ function linkConn(conn,opt){
 
 // Listeners
 
+function onMessage(message,d,packer){
+  packer.pack([message]);
+}
+
+function onceDetached(ev,d,collection,inConns,outConns){
+  var keys,i,j;
+
+  collection.detach();
+
+  keys = Object.keys(inConns);
+  for(j = 0;j < keys.length;j++){
+    i = keys[j];
+    inConns[i].connection.detach();
+  }
+
+  keys = Object.keys(outConns);
+  for(j = 0;j < keys.length;j++){
+    i = keys[j];
+    outConns[i].connection.detach();
+  }
+
+}
+
 function* processUnpacker(unpacker,packer,conn,connections,constraints){
   var data,map,sub;
 
   while(true){
     data = yield unpacker.unpack();
-    if(conn.is('detached')) return;
     if(data instanceof Array) switch(data.length){
 
       case 1:
@@ -87,35 +110,26 @@ function* processUnpacker(unpacker,packer,conn,connections,constraints){
         sub = map[data[1]];
         if(!sub) break;
 
-        sub.unpacker.write(data[2]);
-        if(constraints.bytes && sub.unpacker.bytesSinceFlushed > constraints.bytes)
-          sub.connection.detach();
-
+        sub.connection.end.once('open',unpackOrForward,sub,data[2],constraints);
+        sub.connection.end.once('locked',unpackOrForward,sub,data[2],constraints);
         break;
 
     }
   }
 }
 
-function onMessage(message,d,packer){
-  packer.pack([message]);
-}
+function unpackOrForward(e,d,sub,data,constraints){
 
-function onceDetached(ev,d,collection,inConns,outConns){
-  var keys,i,j;
-
-  collection.detach();
-
-  keys = Object.keys(inConns);
-  for(j = 0;j < keys.length;j++){
-    i = keys[j];
-    inConns[i].connection.detach();
-  }
-
-  keys = Object.keys(outConns);
-  for(j = 0;j < keys.length;j++){
-    i = keys[j];
-    outConns[i].connection.detach();
+  if(sub.connection.end[parentData])
+    sub.connection.end[parentData].packer.pack([
+      sub.connection[parentData].dir,
+      sub.connection[parentData].id,
+      data
+    ]);
+  else{
+    sub.unpacker.write(data);
+    if(constraints.bytes && sub.unpacker.bytesSinceFlushed > constraints.bytes)
+      sub.connection.detach();
   }
 
 }
@@ -131,14 +145,21 @@ function* packerFn(buffer,data){
     return;
   }
 
+  yield buffer.pack(id,Number);
   this.nextId = (this.nextId + 1) % 1e15;
+
   this.connections.out[id] = conn = linkConn(data.end,{
     ebjs: this.instance,
     counters: this.counters,
     constraints: this.constraints
   });
 
-  yield buffer.pack(id,Number);
+  data.end[parentData] = {
+    packer: this.packer,
+    dir: IN,
+    id: id
+  };
+
   walk(processSubPacker,[this.packer,conn.packer,IN,id]);
   data.once('detached',remove,this.packer,this.counters,this.connections,IN,id);
 
@@ -163,6 +184,12 @@ function* unpackerFn(buffer,ref){
     counters: this.counters,
     constraints: this.constraints
   });
+
+  data[parentData] = {
+    packer: this.packer,
+    dir: OUT,
+    id: id
+  };
 
   walk(processSubPacker,[this.packer,conn.packer,OUT,id]);
   data.once('detached',remove,this.packer,this.counters,this.connections,OUT,id);
