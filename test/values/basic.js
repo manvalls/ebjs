@@ -1,5 +1,6 @@
 var t = require('u-test'),
-    assert = require('assert');
+    assert = require('assert'),
+    label = require('../../label.js');
 
 module.exports = function(ebjs){
 
@@ -51,7 +52,7 @@ module.exports = function(ebjs){
     assert.equal(result.t2.t1,result.t1);
     assert.equal(result.t1.t2,result.t2);
 
-    testValues([{foo: 'bar'},{foo: {bar: 'bar',bez: 'bez',n: 5,arr: [1,2,3]}}]);
+    testValues([{foo: 'bar'},{foo: {bar: 'bar',bez: 'bez',n: 5,arr: [1,2,3]}},{[label]: Math.PI}]);
   });
 
   t('Array',function(){

@@ -1,7 +1,11 @@
 var label = require('../../label.js'),
     labels = require('../labels.js');
 
-Object.defineProperty(ArrayBuffer.prototype,label,{value: labels.ArrayBuffer});
+Object.defineProperty(ArrayBuffer.prototype,label,{
+  value: labels.ArrayBuffer,
+  writable: true,
+  configurable: true
+});
 
 function* packer(buffer,data){
   yield buffer.pack(data.byteLength,labels.Number);

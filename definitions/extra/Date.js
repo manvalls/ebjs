@@ -1,7 +1,11 @@
 var label = require('../../label.js'),
     labels = require('../labels.js');
 
-Object.defineProperty(Date.prototype,label,{value: labels.Date});
+Object.defineProperty(Date.prototype,label,{
+  value: labels.Date,
+  writable: true,
+  configurable: true
+});
 
 function* packer(buffer,data){
   yield buffer.pack(data.getTime(),labels.Number);

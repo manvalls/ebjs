@@ -74,7 +74,7 @@ class EbjsInstance{
   getPacker(label){
     var p = this[packers];
 
-    if(typeof label != 'number') label = label.prototype[labelProp];
+    if(typeof label == 'function') label = label.prototype[labelProp];
     if(p.has(label)) return p.get(label);
     if(this[parent]) return this[parent].getPacker(label);
   }
@@ -82,7 +82,7 @@ class EbjsInstance{
   getUnpacker(label){
     var u = this[unpackers];
 
-    if(typeof label != 'number') label = label.prototype[labelProp];
+    if(typeof label == 'function') label = label.prototype[labelProp];
     if(u.has(label)) return u.get(label);
     if(this[parent]) return this[parent].getUnpacker(label);
   }
@@ -95,12 +95,12 @@ class EbjsInstance{
   }
 
   setPacker(label,packer,thisArg){
-    if(typeof label != 'number') label = label.prototype[labelProp];
+    if(typeof label == 'function') label = label.prototype[labelProp];
     this[packers].set(label,[packer,thisArg]);
   }
 
   setUnpacker(label,unpacker,thisArg){
-    if(typeof label != 'number') label = label.prototype[labelProp];
+    if(typeof label == 'function') label = label.prototype[labelProp];
     this[unpackers].set(label,[unpacker,thisArg]);
   }
 

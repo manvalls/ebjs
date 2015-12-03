@@ -9,13 +9,47 @@ SyntaxError.prototype[label] = labels.SyntaxError;
 TypeError.prototype[label] = labels.TypeError;
 URIError.prototype[label] = labels.URIError;
 
-Object.defineProperty(Error.prototype,label,{value: labels.Error});
-Object.defineProperty(EvalError.prototype,label,{value: labels.EvalError});
-Object.defineProperty(RangeError.prototype,label,{value: labels.RangeError});
-Object.defineProperty(ReferenceError.prototype,label,{value: labels.ReferenceError});
-Object.defineProperty(SyntaxError.prototype,label,{value: labels.SyntaxError});
-Object.defineProperty(TypeError.prototype,label,{value: labels.TypeError});
-Object.defineProperty(URIError.prototype,label,{value: labels.URIError});
+Object.defineProperty(Error.prototype,label,{
+  value: labels.Error,
+  writable: true,
+  configurable: true
+});
+
+Object.defineProperty(EvalError.prototype,label,{
+  value: labels.EvalError,
+  writable: true,
+  configurable: true
+});
+
+Object.defineProperty(RangeError.prototype,label,{
+  value: labels.RangeError,
+  writable: true,
+  configurable: true
+});
+
+Object.defineProperty(ReferenceError.prototype,label,{
+  value: labels.ReferenceError,
+  writable: true,
+  configurable: true
+});
+
+Object.defineProperty(SyntaxError.prototype,label,{
+  value: labels.SyntaxError,
+  writable: true,
+  configurable: true
+});
+
+Object.defineProperty(TypeError.prototype,label,{
+  value: labels.TypeError,
+  writable: true,
+  configurable: true
+});
+
+Object.defineProperty(URIError.prototype,label,{
+  value: labels.URIError,
+  writable: true,
+  configurable: true
+});
 
 
 function* packer(buffer,data){

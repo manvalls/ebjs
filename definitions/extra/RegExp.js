@@ -1,7 +1,11 @@
 var label = require('../../label.js'),
     labels = require('../labels.js');
 
-Object.defineProperty(RegExp.prototype,label,{value: labels.RegExp});
+Object.defineProperty(RegExp.prototype,label,{
+  value: labels.RegExp,
+  writable: true,
+  configurable: true
+});
 
 function* packer(buffer,data){
   var flags = 0;

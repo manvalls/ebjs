@@ -3,7 +3,11 @@ var Resolver = require('y-resolver'),
     label = require('../../../label.js'),
     labels = require('../../labels.js');
 
-Object.defineProperty(Blob.prototype,label,{value: labels.Blob});
+Object.defineProperty(Blob.prototype,label,{
+  value: labels.Blob,
+  writable: true,
+  configurable: true
+});
 
 function* packer(buffer,data){
   var remaining = data.size;
@@ -30,7 +34,7 @@ function* unpacker(buffer,ref){
       isClosed = yield buffer.unpack(labels.Boolean),
       ret = new Blob([],{type: type}),
       remaining;
-  
+
   if(isClosed){
     if(ret.close) ret.close();
     else ret.isClosed = true;

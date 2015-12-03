@@ -1,15 +1,59 @@
 var label = require('../../label.js'),
     labels = require('../labels.js');
 
-Object.defineProperty(Uint8Array.prototype,label,{value: labels.Uint8Array});
-Object.defineProperty(Uint8ClampedArray.prototype,label,{value: labels.Uint8ClampedArray});
-Object.defineProperty(Uint16Array.prototype,label,{value: labels.Uint16Array});
-Object.defineProperty(Uint32Array.prototype,label,{value: labels.Uint32Array});
-Object.defineProperty(Int8Array.prototype,label,{value: labels.Int8Array});
-Object.defineProperty(Int16Array.prototype,label,{value: labels.Int16Array});
-Object.defineProperty(Int32Array.prototype,label,{value: labels.Int32Array});
-Object.defineProperty(Float32Array.prototype,label,{value: labels.Float32Array});
-Object.defineProperty(Float32Array.prototype,label,{value: labels.Float32Array});
+Object.defineProperty(Uint8Array.prototype,label,{
+  value: labels.Uint8Array,
+  writable: true,
+  configurable: true
+});
+
+Object.defineProperty(Uint8ClampedArray.prototype,label,{
+  value: labels.Uint8ClampedArray,
+  writable: true,
+  configurable: true
+});
+
+Object.defineProperty(Uint16Array.prototype,label,{
+  value: labels.Uint16Array,
+  writable: true,
+  configurable: true
+});
+
+Object.defineProperty(Uint32Array.prototype,label,{
+  value: labels.Uint32Array,
+  writable: true,
+  configurable: true
+});
+
+Object.defineProperty(Int8Array.prototype,label,{
+  value: labels.Int8Array,
+  writable: true,
+  configurable: true
+});
+
+Object.defineProperty(Int16Array.prototype,label,{
+  value: labels.Int16Array,
+  writable: true,
+  configurable: true
+});
+
+Object.defineProperty(Int32Array.prototype,label,{
+  value: labels.Int32Array,
+  writable: true,
+  configurable: true
+});
+
+Object.defineProperty(Float32Array.prototype,label,{
+  value: labels.Float32Array,
+  writable: true,
+  configurable: true
+});
+
+Object.defineProperty(Float32Array.prototype,label,{
+  value: labels.Float32Array,
+  writable: true,
+  configurable: true
+});
 
 function* packer(buffer,data){
   yield buffer.pack(data.buffer.slice(data.byteOffset,data.byteLength),ArrayBuffer);

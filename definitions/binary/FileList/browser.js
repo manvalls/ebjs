@@ -1,7 +1,11 @@
 var label = require('../../../label.js'),
     labels = require('../../labels.js');
 
-Object.defineProperty(FileList.prototype,label,{value: labels.FileList});
+Object.defineProperty(FileList.prototype,label,{
+  value: labels.FileList,
+  writable: true,
+  configurable: true
+});
 
 function* packer(buffer,data){
   var length = data.length,

@@ -2,10 +2,15 @@ var util = require('./Number/util.js'),
     label = require('../../label.js'),
     labels = require('../labels.js');
 
-Object.defineProperty(Number.prototype,label,{value: labels.Number});
+Object.defineProperty(Number.prototype,label,{
+  value: labels.Number,
+  writable: true,
+  configurable: true
+});
 
 function* packer(buffer,data){
-
+  data = Number(data);
+  
   if(util.isUi32(data)){
 
     if(data < 248){

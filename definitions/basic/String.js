@@ -3,10 +3,14 @@ var getBytes = require('./String/getBytes.js'),
     label = require('../../label.js'),
     labels = require('../labels.js');
 
-Object.defineProperty(String.prototype,label,{value: labels.String});
+Object.defineProperty(String.prototype,label,{
+  value: labels.String,
+  writable: true,
+  configurable: true
+});
 
 function* packer(buffer,data){
-  var bytes = getBytes(data + '');
+  var bytes = getBytes(String(data));
 
   yield buffer.pack(bytes.length,labels.Number);
   yield buffer.write(bytes);

@@ -31,7 +31,7 @@ class WriteBuffer{
 }
 
 function* packIt(data,lab,ebjs,refc,refs,buffer){
-  var packer;
+  var packer,pd;
 
   if(!lab){
     lab = ebjs.getLabel(data);
@@ -48,11 +48,20 @@ function* packIt(data,lab,ebjs,refc,refs,buffer){
     }
 
     try{ refs.set(data,refc); }catch(e){ }
-    lab = data[label];
+    pd = data;
+
+    while(true){
+      lab = pd[label];
+      packer = ebjs.getPacker(lab);
+      if(packer) break;
+      pd = Object.getPrototypeOf(pd);
+    }
+
     yield buffer.pack(lab,NUMBER);
   }
 
-  packer = ebjs.getPacker(lab);
+  packer = packer || ebjs.getPacker(lab);
+  if(!packer) throw new TypeError('Unsupported label ' + lab);
   yield walk(packer[0],[buffer,data],packer[1]);
 }
 

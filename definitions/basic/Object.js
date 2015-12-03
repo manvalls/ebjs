@@ -1,11 +1,20 @@
 var label = require('../../label.js'),
     labels = require('../labels.js');
 
-Object.defineProperty(Object.prototype,label,{value: labels.Object});
+Object.defineProperty(Object.prototype,label,{
+  value: labels.Object,
+  writable: true,
+  configurable: true
+});
 
 function* packer(buffer,data){
-  var keys = Object.keys(data),
-      i;
+  var keys,i;
+
+  try{ keys = Object.keys(data); }
+  catch(e){
+    data = {};
+    keys = [];
+  }
 
   yield buffer.pack(keys.length,labels.Number);
 
