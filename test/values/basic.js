@@ -55,13 +55,17 @@ module.exports = function(ebjs){
     testValues([{foo: 'bar'},{foo: {bar: 'bar',bez: 'bez',n: 5,arr: [1,2,3]}},{[label]: Math.PI}]);
   });
 
-  t('Array',function(){
+  t('Array',function*(){
     var arr = [],
         result;
 
     arr.push(arr);
     result = transform(arr);
     assert.equal(result[0],result);
+    assert.deepEqual(yield transform({
+      [label]: 5,
+      length: Infinity
+    }),[]);
 
     testValues([1,2,3],[{foo: 'bar'},null,'null',undefined,NaN],[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]);
   });

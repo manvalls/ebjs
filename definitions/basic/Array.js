@@ -8,9 +8,13 @@ Object.defineProperty(Array.prototype,label,{
 });
 
 function* packer(buffer,data){
-  var length = data.length,
-      i;
+  var arr = [],
+      length,i;
 
+  try{ arr.length = data.length; }
+  catch(e){ arr = data = []; }
+  length = arr.length;
+  
   yield buffer.pack(length,labels.Number);
   for(i = 0;i < length;i++) yield buffer.pack(data[i]);
 }

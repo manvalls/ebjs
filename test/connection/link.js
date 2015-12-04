@@ -254,7 +254,11 @@ function constraintsTest(getConns,level){
       conn = new Connection();
       conn.detach();
       c1.send(conn);
+
+      conn = new Connection();
+      conn.lock();
       c2.send(conn);
+
       for(conn of (
         yield [
           c1.until('message'),

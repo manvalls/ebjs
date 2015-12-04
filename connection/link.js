@@ -140,19 +140,27 @@ function* packerFn(buffer,data){
   var id = this.nextId,
       conn;
 
-  if(data.is('detached')){
+  try{
+
+    if(data.is('detached')){
+      yield buffer.pack(-1,Number);
+      return;
+    }
+
+    conn = linkConn(data.end,{
+      ebjs: this.instance,
+      counters: this.counters,
+      constraints: this.constraints
+    });
+    
+  }catch(e){
     yield buffer.pack(-1,Number);
     return;
   }
 
   yield buffer.pack(id,Number);
   this.nextId = (this.nextId + 1) % 1e15;
-
-  this.connections.out[id] = conn = linkConn(data.end,{
-    ebjs: this.instance,
-    counters: this.counters,
-    constraints: this.constraints
-  });
+  this.connections.out[id] = conn;
 
   data.end[parentData] = {
     packer: this.packer,
