@@ -1,6 +1,8 @@
 var t = require('u-test'),
     assert = require('assert'),
-    label = require('../../label.js');
+    label = require('../../label.js'),
+    labels = require('../../definitions/labels.js'),
+    Connection = require('../../connection.js');
 
 module.exports = function(ebjs){
 
@@ -63,7 +65,7 @@ module.exports = function(ebjs){
     result = transform(arr);
     assert.equal(result[0],result);
     assert.deepEqual(yield transform({
-      [label]: 5,
+      [label]: labels.Array,
       length: Infinity
     }),[]);
 
@@ -76,6 +78,10 @@ module.exports = function(ebjs){
 
   t('undefined',function(){
     testValues([undefined]);
+  });
+
+  t('Connection',function(){
+    assert(transform(new Connection()).is('detached'));
   });
 
 };

@@ -8,6 +8,7 @@ Object.defineProperty(Buffer.prototype,label,{
 });
 
 function* packer(buffer,data){
+  if(!(data instanceof Buffer)) data = new Buffer(0);
   yield buffer.pack(data.length,labels.Number);
   yield buffer.write(data);
 }

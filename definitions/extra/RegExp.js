@@ -10,6 +10,7 @@ Object.defineProperty(RegExp.prototype,label,{
 function* packer(buffer,data){
   var flags = 0;
 
+  data = data || {};
   if(data.multiline)  flags |= 1;
   if(data.global)     flags |= 2;
   if(data.ignoreCase) flags |= 4;

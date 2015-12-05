@@ -1,5 +1,7 @@
 var t = require('u-test'),
-    assert = require('assert');
+    assert = require('assert'),
+    label = require('../../label.js'),
+    labels = require('../../definitions/labels.js');
 
 module.exports = function(ebjs){
 
@@ -30,6 +32,10 @@ module.exports = function(ebjs){
 
   t('Date',function(){
     testValues([new Date(),new Date(0),new Date(-5),new Date(50),new Date(-4e10)]);
+
+    assert.strictEqual(transform({
+      [label]: labels.Date
+    }).toString(),'Invalid Date');
   });
 
   t('RegExp',function(){

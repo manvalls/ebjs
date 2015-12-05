@@ -53,6 +53,7 @@ Object.defineProperty(URIError.prototype,label,{
 
 
 function* packer(buffer,data){
+  data = data || {};
   yield buffer.pack(data.name,labels.String);
   yield buffer.pack(data.message,labels.String);
 }

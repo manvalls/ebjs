@@ -1,7 +1,9 @@
 var t = require('u-test'),
     assert = require('assert'),
     walk = require('y-walk'),
-    Resolver = require('y-resolver');
+    Resolver = require('y-resolver'),
+    label = require('../../label.js'),
+    labels = require('../../definitions/labels.js');
 
 function read(blob){
   var fr = new FileReader(),
@@ -20,11 +22,29 @@ module.exports = function(ebjs){
     return yield ebjs.unpack(yield ebjs.pack(data));
   });
 
+  t('ArrayBuffer',function*(){
+    var ab = yield transform(new ArrayBuffer(5));
+
+    assert.strictEqual(ab.byteLength,5);
+    ab = yield transform({
+      [label]: labels.ArrayBuffer
+    });
+
+    assert.strictEqual(ab.byteLength,0);
+  });
+
   t('TypedArray',function*(){
     var ui8 = new Uint8Array([1,2,3]),
         result = yield transform(ui8);
 
     assert.deepEqual(result,[1,2,3]);
+    assert.strictEqual(ui8.constructor,result.constructor);
+
+    result = yield transform({
+      [label]: labels.Uint8Array
+    });
+
+    assert.deepEqual(result,[]);
     assert.strictEqual(ui8.constructor,result.constructor);
   });
 
@@ -34,11 +54,26 @@ module.exports = function(ebjs){
 
     assert.deepEqual(result,[1,2,3]);
     assert.strictEqual(buff.constructor,buff.constructor);
+
+    result = yield transform({
+      [label]: labels.Buffer
+    });
+
+    assert.deepEqual(result,[]);
+    assert.strictEqual(buff.constructor,buff.constructor);
   });
 
   else t('Buffer',function*(){
     var result = yield ebjs.unpack(new Uint8Array([ 31, 3, 1, 2, 3 ]));
     assert.deepEqual(result,[1,2,3]);
+    assert.deepEqual(yield transform({[label]: labels.Buffer}),{[label]: labels.Buffer});
+  });
+
+  if(global.Blob) t('Blob',function*(){
+    var result = yield transform({[label]: labels.Blob});
+
+    assert.strictEqual(result.constructor,Blob);
+    assert.strictEqual(yield read(result),'');
   });
 
   if(global.File) t('File',function*(){
@@ -59,6 +94,11 @@ module.exports = function(ebjs){
     assert.strictEqual(result.name,'filename');
     assert.strictEqual(result.lastModified,74);
     assert.strictEqual(result.isClosed,true);
+
+    result = yield transform({[label]: labels.File});
+    assert.strictEqual(result.constructor,File);
+    assert.strictEqual(result.type,'');
+    assert.strictEqual(result.name,'');
   });
 
   else if(global.Buffer) t('File',function*(){
@@ -92,6 +132,9 @@ module.exports = function(ebjs){
     assert.strictEqual(result.length,2);
     assert.strictEqual(yield read(result[0]),'foo');
     assert.strictEqual(yield read(result[1]),'bar');
+
+    result = yield transform({[label]: labels.FileList});
+    assert.strictEqual(result.length,0);
   });
 
   else if(global.Buffer)t('FileList',function*(){

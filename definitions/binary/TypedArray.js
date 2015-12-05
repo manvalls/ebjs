@@ -56,11 +56,12 @@ Object.defineProperty(Float32Array.prototype,label,{
 });
 
 function* packer(buffer,data){
-  yield buffer.pack(data.buffer.slice(data.byteOffset,data.byteLength),ArrayBuffer);
+  if(!(data instanceof this)) data = new this();
+  yield buffer.pack(data.buffer.slice(data.byteOffset,data.byteLength),labels.ArrayBuffer);
 }
 
 function* unpacker(buffer,ref){
-  return new this(yield buffer.unpack(ArrayBuffer));
+  return new this(yield buffer.unpack(labels.ArrayBuffer));
 }
 
 module.exports = function(ebjs){

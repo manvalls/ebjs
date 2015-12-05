@@ -8,6 +8,7 @@ Object.defineProperty(File.prototype,label,{
 });
 
 function* packer(buffer,data){
+  if(!(data instanceof File)) data = new File([],'');
   yield buffer.pack(data.name,labels.String);
   yield buffer.pack(data.lastModified,labels.Number);
   yield buffer.pack(data,labels.Blob);

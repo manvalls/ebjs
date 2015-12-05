@@ -8,6 +8,7 @@ Object.defineProperty(ArrayBuffer.prototype,label,{
 });
 
 function* packer(buffer,data){
+  if(!(data instanceof ArrayBuffer)) data = new ArrayBuffer();
   yield buffer.pack(data.byteLength,labels.Number);
   yield buffer.write(new Uint8Array(data));
 }

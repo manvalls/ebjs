@@ -8,6 +8,7 @@ Object.defineProperty(Date.prototype,label,{
 });
 
 function* packer(buffer,data){
+  if(!(data instanceof Date)) data = new Date(data);
   yield buffer.pack(data.getTime(),labels.Number);
 }
 

@@ -11,6 +11,7 @@ function* packer(buffer,data){
   var length = data.length,
       i;
 
+  if(!(data instanceof FileList)) length = 0;
   yield buffer.pack(length,labels.Number);
   for(i = 0;i < length;i++) yield buffer.pack(data[i] || new File([],''),labels.File);
 }

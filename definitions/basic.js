@@ -4,7 +4,8 @@ var _Number = require('./basic/Number.js'),
     _Object = require('./basic/Object.js'),
     _Array = require('./basic/Array.js'),
     _null = require('./basic/null.js'),
-    _undefined = require('./basic/undefined.js');
+    _undefined = require('./basic/undefined.js'),
+    _Connection = require('./basic/Connection.js');
 
 module.exports = function(ebjs){
   _Number(ebjs);
@@ -14,4 +15,5 @@ module.exports = function(ebjs){
   _Array(ebjs);
   _null(ebjs);
   _undefined(ebjs);
+  _Connection(ebjs);
 };

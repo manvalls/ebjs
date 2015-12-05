@@ -12,6 +12,7 @@ Object.defineProperty(Blob.prototype,label,{
 function* packer(buffer,data){
   var remaining = data.size;
 
+  if(!(data instanceof Blob)) data = new Blob();
   yield buffer.pack(data.type,labels.String);
   yield buffer.pack(data.isClosed,labels.Boolean);
   if(data.isClosed) return;

@@ -10,7 +10,7 @@ Object.defineProperty(String.prototype,label,{
 });
 
 function* packer(buffer,data){
-  var bytes = getBytes(String(data));
+  var bytes = getBytes(String(data == null ? '' : data));
 
   yield buffer.pack(bytes.length,labels.Number);
   yield buffer.write(bytes);
