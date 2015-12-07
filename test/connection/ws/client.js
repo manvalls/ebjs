@@ -1,7 +1,6 @@
 var Ws = require('../../../connection/ws.js'),
     t = require('u-test'),
-    assert = require('assert'),
-    wait = require('y-timers/wait');
+    assert = require('assert');
 
 t('WebSocket implementation - ' + (global.process ? 'node.js' : 'browser'),function(){
 
@@ -15,13 +14,7 @@ t('WebSocket implementation - ' + (global.process ? 'node.js' : 'browser'),funct
     assert.strictEqual(msg,'question');
     ws.send('answer');
     ws.send(':)');
-
-    msg = yield ws.until('message');
-    assert.deepEqual(msg,{foo: 'bar'});
-    ws.send({bar: 'foo'});
-
     ws.detach();
-    yield wait(500);
   });
 
   t('Close from server',function*(){

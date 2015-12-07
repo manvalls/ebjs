@@ -25,11 +25,6 @@ t('WebSocket server implementation',function*(){
     assert.strictEqual(msg,'answer');
     msg = yield ws.until('message');
     assert.strictEqual(msg,':)');
-
-    ws.send({foo: 'bar'});
-    msg = yield ws.until('message');
-    assert.deepEqual(msg,{bar: 'foo'});
-
     yield ws.until('detached');
   }
 

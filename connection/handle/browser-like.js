@@ -47,11 +47,18 @@ module.exports = function(ch,connection,packer,unpacker,maxBytes){
 
 // Handlers
 
-function removeListeners(ev,d,handleState,handleData,walker,ch){
+function* removeListeners(ev,d,handleState,handleData,walker,ch){
   ch.removeEventListener('open',handleState,false);
   ch.removeEventListener('close',handleState,false);
   ch.removeEventListener('error',handleState,false);
   ch.removeEventListener('message',handleData,false);
+
+  while(ch.bufferedAmount){
+    if(ch.readyState == 3 || ch.readyState == 'closed') break;
+    yield tick();
+    yield tick();
+  }
+
   walker.pause();
   ch.close();
 }
