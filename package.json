@@ -6,14 +6,15 @@
   "dependencies": {
     "binary-buffer": "^5.0.0",
     "detacher": "^1.4.3",
+    "websocket-driver": "^0.6.3",
     "y-emitter": "^8.0.1",
     "y-lock": "^2.0.3",
     "y-resolver": "^6.1.1",
+    "y-timers": "^1.1.1",
     "y-walk": "^10.0.0"
   },
   "devDependencies": {
-    "u-test": "^3.1.7",
-    "y-timers": "^1.1.1"
+    "u-test": "^3.1.7"
   },
   "scripts": {
     "test": "e= u-test"
