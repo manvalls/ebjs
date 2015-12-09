@@ -1,151 +1,8 @@
-var linkConn = require('../../connection/link.js'),
+var utils = require('./utils.js'),
     Connection = require('../../connection.js'),
-    walk = require('y-walk'),
     t = require('u-test'),
     assert = require('assert'),
-    wait = require('y-timers/wait'),
-    pipe,getSubSubPair,getSubPair,getPair;
-
-// Utils
-
-pipe = walk.wrap(function*(packer,unpacker){
-  var data;
-
-  while(true){
-    data = yield packer.read(1e3);
-    yield wait(10);
-    unpacker.write(data);
-  }
-
-});
-
-getPair = walk.wrap(function(constraints){
-  var c1 = new Connection(),
-      c2 = new Connection(),
-      l1 = linkConn(c1,constraints ? {constraints} : null),
-      l2 = linkConn(c2,constraints ? {constraints} : null);
-
-  c1.once('detached',detach,c2);
-  c2.once('detached',detach,c1);
-
-  pipe(l1.packer,l2.unpacker);
-  pipe(l2.packer,l1.unpacker);
-
-  return [c1,c2];
-});
-
-getSubPair = walk.wrap(function*(constraints){
-  var conns = yield getPair(constraints),
-      c1 = conns[0],
-      c2 = conns[1],
-      sc1 = new Connection(),
-      sc2;
-
-  sc2 = c2.until('message');
-  c1.open();
-  c2.open();
-
-  c1.send(sc1.end);
-  sc2 = yield sc2;
-
-  return [sc1,sc2,c1,c2];
-});
-
-getSubSubPair = walk.wrap(function*(constraints){
-  var conns = yield getSubPair(constraints),
-      c1 = conns[0],
-      c2 = conns[1],
-      sc1 = new Connection(),
-      sc2;
-
-  sc2 = c2.until('message');
-  c1.open();
-  c2.open();
-
-  c1.send(sc1.end);
-  sc2 = yield sc2;
-
-  return [sc1,sc2,c1,c2];
-});
-
-getBridge = walk.wrap(function*(constraints){
-  var conns1 = yield getPair(constraints),
-      conns2 = yield getPair(constraints),
-      c11 = conns1[0],
-      c12 = conns1[1],
-      c21 = conns2[0],
-      c22 = conns2[1],
-      tempConn = new Connection();
-
-  c11.open();
-  c12.open();
-  c21.open();
-  c22.open();
-
-  c11.send(tempConn);
-  c21.send(tempConn.end);
-
-  return [
-    yield c12.until('message'),
-    yield c22.until('message'),
-    c11,
-    c12
-  ];
-});
-
-getSubBridge = walk.wrap(function*(constraints){
-  var conns1 = yield getBridge(constraints),
-      conns2 = yield getBridge(constraints),
-      c11 = conns1[0],
-      c12 = conns1[1],
-      c21 = conns2[0],
-      c22 = conns2[1],
-      tempConn = new Connection();
-
-  c11.open();
-  c12.open();
-  c21.open();
-  c22.open();
-
-  c11.send(tempConn);
-  c21.send(tempConn.end);
-
-  return [
-    yield c12.until('message'),
-    yield c22.until('message'),
-    c11,
-    c12
-  ];
-});
-
-getSubconnectionBridge = walk.wrap(function*(constraints){
-  var conns1 = yield getSubPair(constraints),
-      conns2 = yield getSubPair(constraints),
-      c11 = conns1[0],
-      c12 = conns1[1],
-      c21 = conns2[0],
-      c22 = conns2[1],
-      tempConn = new Connection();
-
-  c11.open();
-  c12.open();
-  c21.open();
-  c22.open();
-
-  c11.send(tempConn);
-  c21.send(tempConn.end);
-
-  return [
-    yield c12.until('message'),
-    yield c22.until('message'),
-    c11,
-    c12
-  ];
-});
-
-function detach(e,d,c){
-  c.detach();
-}
+    wait = require('y-timers/wait');
 
 // Factories
 
@@ -282,29 +139,29 @@ function constraintsTest(getConns,level){
 
 t('link',function(){
 
-  t('Basic send and receive',sendTest(getPair));
+  t('Basic send and receive',sendTest(utils.getPair));
 
-  t('Basic detaching',detachTest(getPair));
+  t('Basic detaching',detachTest(utils.getPair));
 
   t('Subconnection',function(){
 
-    t('Basic send and receive',sendTest(getSubPair));
+    t('Basic send and receive',sendTest(utils.getSubPair));
 
-    t('Basic detaching',detachTest(getSubPair));
+    t('Basic detaching',detachTest(utils.getSubPair));
 
-    t('Parent connection detaching',detachParentTest(getSubPair));
+    t('Parent connection detaching',detachParentTest(utils.getSubPair));
 
-    t('Constraints',constraintsTest(getSubPair,1));
+    t('Constraints',constraintsTest(utils.getSubPair,1));
 
     t('Subconnection',function(){
 
-      t('Basic send and receive',sendTest(getSubSubPair));
+      t('Basic send and receive',sendTest(utils.getSubSubPair));
 
-      t('Basic detaching',detachTest(getSubSubPair));
+      t('Basic detaching',detachTest(utils.getSubSubPair));
 
-      t('Parent connection detaching',detachParentTest(getSubSubPair));
+      t('Parent connection detaching',detachParentTest(utils.getSubSubPair));
 
-      t('Constraints',constraintsTest(getSubSubPair,2));
+      t('Constraints',constraintsTest(utils.getSubSubPair,2));
 
     });
 
@@ -312,35 +169,35 @@ t('link',function(){
 
   t('Bridge',function(){
 
-    t('Basic send and receive',sendTest(getBridge));
+    t('Basic send and receive',sendTest(utils.getBridge));
 
-    t('Basic detaching',detachTest(getBridge));
+    t('Basic detaching',detachTest(utils.getBridge));
 
-    t('Parent connection detaching',detachParentTest(getBridge));
+    t('Parent connection detaching',detachParentTest(utils.getBridge));
 
-    t('Constraints',constraintsTest(getBridge,1));
+    t('Constraints',constraintsTest(utils.getBridge,1));
 
     t('Subconnection',function(){
 
-      t('Basic send and receive',sendTest(getSubconnectionBridge));
+      t('Basic send and receive',sendTest(utils.getSubconnectionBridge));
 
-      t('Basic detaching',detachTest(getSubconnectionBridge));
+      t('Basic detaching',detachTest(utils.getSubconnectionBridge));
 
-      t('Parent connection detaching',detachParentTest(getSubconnectionBridge));
+      t('Parent connection detaching',detachParentTest(utils.getSubconnectionBridge));
 
-      t('Constraints',constraintsTest(getSubconnectionBridge,2));
+      t('Constraints',constraintsTest(utils.getSubconnectionBridge,2));
 
     });
 
     t('Subbridge',function(){
 
-      t('Basic send and receive',sendTest(getSubBridge));
+      t('Basic send and receive',sendTest(utils.getSubBridge));
 
-      t('Basic detaching',detachTest(getSubBridge));
+      t('Basic detaching',detachTest(utils.getSubBridge));
 
-      t('Parent connection detaching',detachParentTest(getSubBridge));
+      t('Parent connection detaching',detachParentTest(utils.getSubBridge));
 
-      t('Constraints',constraintsTest(getSubBridge,2));
+      t('Constraints',constraintsTest(utils.getSubBridge,2));
 
     });
 

@@ -6,7 +6,10 @@
   "dependencies": {
     "binary-buffer": "^5.0.0",
     "detacher": "^1.4.3",
+    "ortc-adapter": "^0.1.6",
+    "u-proto": "^5.4.2",
     "websocket-driver": "^0.6.3",
+    "y-callback": "^1.2.2",
     "y-emitter": "^8.0.1",
     "y-lock": "^2.0.3",
     "y-resolver": "^6.1.1",
