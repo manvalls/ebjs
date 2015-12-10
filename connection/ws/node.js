@@ -32,7 +32,7 @@ module.exports = function(location,constraints){
   socket.pipe(drv.io).pipe(socket);
 
   constraints = constraints || {};
-  ld = link(new Connection(),{constraints});
+  ld = link(new Connection(),{constraints,ebjs: constraints.ebjs});
   handle(drv,ld.connection,ld.packer,ld.unpacker,constraints.bytes);
   return ld.connection;
 };

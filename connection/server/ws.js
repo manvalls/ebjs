@@ -41,7 +41,7 @@ module.exports = function(srv,options){
     driver.io.write(body);
     socket.pipe(driver.io).pipe(socket);
 
-    ld = link(new Connection(),{constraints});
+    ld = link(new Connection(),{constraints,ebjs: options.ebjs});
     handle(driver,ld.connection,ld.packer,ld.unpacker,constraints.bytes);
 
     driver.start();

@@ -38,7 +38,7 @@ module.exports = function(connection,constraints){
     if(dc) return;
     forwarder.detach();
     dc = e.channel;
-    ld = link(new Connection(),{constraints});
+    ld = link(new Connection(),{constraints,ebjs: constraints.ebjs});
     handle(dc,ld.connection,ld.packer,ld.unpacker,constraints.bytes);
 
     ld.connection.open();
