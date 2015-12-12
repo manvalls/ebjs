@@ -48,3 +48,16 @@ l.FileList =                  34;
 /** RESERVED **/              38;
 /** RESERVED **/              39;
 /** RESERVED **/              40;
+
+/*/--- RTC ---/*/
+
+l.RTCConnection =             41;
+l.RTCSessionDescription =     42;
+l.RTCIceCandidate =           43;
+/** RESERVED **/              44;
+/** RESERVED **/              45;
+/** RESERVED **/              46;
+/** RESERVED **/              47;
+/** RESERVED **/              48;
+/** RESERVED **/              49;
+/** RESERVED **/              50;

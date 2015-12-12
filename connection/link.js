@@ -1,12 +1,22 @@
-var walk = require('y-walk'),
-    Collection = require('detacher/collection'),
-
-    ebjs = require('../main.js'),
-    Connection = require('../connection.js'),
-    parentData = 'ElKPs-yqyhY',
+var parentData = 'ElKPs-yqyhY',
 
     IN = 0,
-    OUT = 1;
+    OUT = 1,
+
+    walk,Collection,ebjs,Connection;
+
+/*/ exports /*/
+
+module.exports = linkConn;
+
+/*/ exports /*/
+
+walk = require('y-walk');
+Collection = require('detacher/collection');
+ebjs = require('../main.js');
+Connection = require('../connection.js');
+
+// Main
 
 function linkConn(conn,opt){
   var obj = {},
@@ -152,7 +162,7 @@ function* packerFn(buffer,data){
       counters: this.counters,
       constraints: this.constraints
     });
-    
+
   }catch(e){
     yield buffer.pack(-1,Number);
     return;
@@ -222,7 +232,3 @@ function* processSubPacker(packer,subpacker,dir,id){
   var buff = new Uint8Array(1e3);
   while(true) yield packer.pack([dir,id,yield subpacker.read(buff)]);
 }
-
-/*/ exports /*/
-
-module.exports = linkConn;

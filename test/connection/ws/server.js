@@ -36,5 +36,6 @@ t('WebSocket server implementation',function*(){
   }
 
   yield arr;
+  wss.detach();
   server.close();
 });

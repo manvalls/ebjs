@@ -1,5 +1,6 @@
 var prefix = require('u-proto/prefix'),
-    Pair = require('y-callback/pair');
+    Pair = require('y-callback/pair'),
+    walk = require('y-walk');
 
 exports.iceServers = [];
 
@@ -76,3 +77,40 @@ if(exports.RTCPeerConnection) (function(){
   }
 
 })();
+
+exports.handleMessage = walk.wrap(function*(pc,message,relay){
+  var answer;
+
+  if(message.candidate){
+    exports.addIceCandidate(pc,message);
+    return;
+  }
+
+  if(message.type == 'offer'){
+    yield exports.setRemoteDescription(pc,message);
+    answer = yield exports.createAnswer(pc);
+    exports.setLocalDescription(pc,answer);
+    relay.send(answer);
+    return;
+  }
+
+  if(message.type == 'answer'){
+    yield exports.setRemoteDescription(pc,message);
+    return;
+  }
+
+});
+
+exports.sendCandidates = function(pc,relay){
+
+  pc.onicecandidate = function(e){
+    if(e.candidate) relay.send(e.candidate);
+  };
+
+};
+
+exports.sendOffer = walk.wrap(function*(pc,relay){
+  var offer = yield exports.createOffer(pc);
+  exports.setLocalDescription(pc,offer);
+  relay.send(offer);
+});

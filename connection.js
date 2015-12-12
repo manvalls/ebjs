@@ -15,7 +15,7 @@ class Connection extends Target{
 
     if(!child){
       child = true;
-      this[end] = new Connection();
+      this[end] = new this.constructor(...arguments);
       this[end][end] = this;
       child = false;
     }
