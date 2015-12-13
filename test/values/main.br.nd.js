@@ -19,6 +19,7 @@ t(desc,function(){
   child.setConstant(5e3,s);
   assert.strictEqual(child.unpack(child.pack(s).value).value,s);
 
-  require('./basic.js')(child);
-  require('./extra.js')(child);
+  t('Child',function(){
+    require('./basic.js')(child);
+  });
 });

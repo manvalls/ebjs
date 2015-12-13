@@ -2,7 +2,25 @@ var prefix = require('u-proto/prefix'),
     Pair = require('y-callback/pair'),
     walk = require('y-walk');
 
-exports.iceServers = [];
+exports.iceServers = [
+  {urls: 'stun:stun.l.google.com:19305'},
+  {urls: 'stun:stun1.l.google.com:19305'},
+  {urls: 'stun:stun2.l.google.com:19305'},
+  {urls: 'stun:stun3.l.google.com:19305'},
+  {urls: 'stun:stun4.l.google.com:19305'},
+  {urls: 'stun:stun.l.google.com:19302'},
+  {urls: 'stun:stun1.l.google.com:19302'},
+  {urls: 'stun:stun2.l.google.com:19302'},
+  {urls: 'stun:stun3.l.google.com:19302'},
+  {urls: 'stun:stun4.l.google.com:19302'},
+  {urls: 'stun:stun-turn.org:3478'},
+  {urls: 'turn:stun-turn.org:3478'},
+  {
+    urls: 'turn:turn.bistri.com:80',
+    credential: 'homeo',
+    username: 'homeo'
+  }
+];
 
 exports.RTCPeerConnection = global[prefix]('RTCPeerConnection');
 exports.RTCSessionDescription = global[prefix]('RTCSessionDescription');

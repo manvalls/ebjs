@@ -8,7 +8,7 @@ exports.pipe = walk.wrap(function*(packer,unpacker){
 
   while(true){
     data = yield packer.read(1e3);
-    yield wait(10);
+    if(Math.random() > 0.5) yield wait(10);
     unpacker.write(data);
   }
 

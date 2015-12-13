@@ -24,7 +24,7 @@ l.ReferenceError =            16;
 l.SyntaxError =               17;
 l.TypeError =                 18;
 l.URIError =                  19;
-/** RESERVED **/              20;
+l.Promise =                   20;
 
 /*/--- binary ---/*/
 
