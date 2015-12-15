@@ -38,13 +38,26 @@ function linkConn(conn,opt){
 
   obj.packer = obj.instance.createPacker();
   obj.unpacker = obj.instance.createUnpacker();
+  packer = obj.instance.createPacker();
+  unpacker = obj.instance.createUnpacker();
 
   obj.agent = conn.end.lock();
 
   obj.collection.add(
-    obj.agent.on('message',onMessage,obj.packer),
+    obj.agent.on('message',onMessage,packer),
     obj.agent.once('detached',onceDetached,obj.collection,obj.connections.in,obj.connections.out),
-    walk(processUnpacker,[obj.unpacker,obj.packer,obj.agent,obj.connections,obj.constraints])
+    walk(processUnpacker,[
+      obj.unpacker,
+      obj.packer,
+      unpacker,
+      obj.connections,
+      obj.constraints,
+      obj.counters,
+      obj.instance,
+      obj.agent
+    ]),
+    walk(processTopUnpacker,[unpacker,obj.agent]),
+    walk(processTopPacker,[packer,obj.packer])
   );
 
   return {
@@ -57,8 +70,17 @@ function linkConn(conn,opt){
 
 // Listeners
 
+function* processTopUnpacker(topUnpacker,agent){
+  while(true) agent.send(yield topUnpacker.unpack());
+}
+
+function* processTopPacker(topPacker,packer){
+  var buff = new Uint8Array(1e3);
+  while(true) yield packer.pack([yield topPacker.read(buff)]);
+}
+
 function onMessage(message,d,packer){
-  packer.pack([message]);
+  packer.pack(message);
 }
 
 function onceDetached(ev,d,collection,inConns,outConns){
@@ -80,8 +102,8 @@ function onceDetached(ev,d,collection,inConns,outConns){
 
 }
 
-function* processUnpacker(unpacker,packer,conn,connections,constraints){
-  var data,map,sub;
+function* processUnpacker(unpacker,packer,topUnpacker,connections,constraints,counters,ebjs,agent){
+  var data,map,sub,conn;
 
   while(true){
     data = yield unpacker.unpack();
@@ -91,7 +113,32 @@ function* processUnpacker(unpacker,packer,conn,connections,constraints){
 
         // Simple message
 
-        conn.send(data[0]);
+        if(data[0] instanceof Uint8Array){
+
+          topUnpacker.write(data[0]);
+          if(constraints.bytes && topUnpacker.bytesSinceFlushed > constraints.bytes) agent.detach();
+
+        // Subconnection init
+
+        }else if(typeof data[0] == 'number'){
+
+          conn = new Connection();
+          conn.once('detached',remove,packer,counters,connections,OUT,data[0]);
+
+          connections.in[data[0]] = linkConn(conn,{
+            ebjs: ebjs,
+            counters: counters,
+            constraints: constraints
+          });
+
+          conn[parentData] = {
+            packer: packer,
+            dir: OUT,
+            id: data[0]
+          };
+
+        }
+
         break;
 
       case 2:
@@ -168,6 +215,7 @@ function* packerFn(buffer,data){
     return;
   }
 
+  this.packer.pack([id]);
   yield buffer.pack(id,Number);
   this.nextId = (this.nextId + 1) % 1e15;
   this.connections.out[id] = conn;
@@ -178,8 +226,10 @@ function* packerFn(buffer,data){
     id: id
   };
 
-  walk(processSubPacker,[this.packer,conn.packer,IN,id]);
   data.once('detached',remove,this.packer,this.counters,this.connections,IN,id);
+  conn.collection.add(
+    walk(processSubPacker,[this.packer,conn.packer,IN,id])
+  );
 
   this.counters.connections++;
   if(this.constraints.connections && this.counters.connections > this.constraints.connections)
@@ -189,41 +239,32 @@ function* packerFn(buffer,data){
 
 function* unpackerFn(buffer,ref){
   var id = yield buffer.unpack(Number),
-      data = new Connection(),
       conn;
 
-  if(id == -1){
-    data.detach();
-    return data;
+  conn = this.connections.in[id];
+  if(id == -1 || !conn){
+    conn = new Connection();
+    conn.detach();
+    return conn;
   }
 
-  this.connections.in[id] = conn = linkConn(data,{
-    ebjs: this.instance,
-    counters: this.counters,
-    constraints: this.constraints
-  });
-
-  data[parentData] = {
-    packer: this.packer,
-    dir: OUT,
-    id: id
-  };
-
-  walk(processSubPacker,[this.packer,conn.packer,OUT,id]);
-  data.once('detached',remove,this.packer,this.counters,this.connections,OUT,id);
+  conn.collection.add(
+    walk(processSubPacker,[this.packer,conn.packer,OUT,id])
+  );
 
   this.counters.connections++;
   if(this.constraints.connections && this.counters.connections > this.constraints.connections)
-    data.detach();
+    conn.connection.detach();
 
-  return data;
+  return conn.connection;
 }
 
 // Subconnection listeners
 
 function remove(e,d,packer,counters,conns,dir,id){
-  if(dir == IN) delete conns.out[id];
-  else delete conns.in[id];
+  var result;
+  if(dir == IN) result = delete conns.out[id];
+  else result = delete conns.in[id];
   counters.connections--;
   packer.pack([dir,id]);
 }

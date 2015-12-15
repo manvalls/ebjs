@@ -60,9 +60,9 @@ class Connection extends Target{
     e[emitter].unset('open');
     e[emitter].unset('locked');
 
-    this[emitter].set('detached');
     if(this[agent]) this[agent][emitter].set('detached');
     if(e[agent]) e[agent][emitter].set('detached');
+    this[emitter].set('detached');
     e[emitter].set('detached');
   }
 
@@ -82,6 +82,10 @@ class Agent extends Target{
     if(!this[end][end]) throw new Error('The underlying connection is detached');
     walk(giveMsg,[this[end][emitter],this[end],message]);
     walk(giveLM,[this[end],message]);
+  }
+
+  detach(){
+    if(this[end]) this[end].detach();
   }
 
 }

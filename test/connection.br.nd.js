@@ -149,7 +149,7 @@ t('Connection - ' + (global.navigator ? 'browser' : 'node.js'),function*(){
     assert.strictEqual(msg,'foo');
 
     conn.end.send('bar');
-    conn.detach();
+    sender.detach();
 
     try{ sender.send('foo'); }
     catch(e){ error = e; }
