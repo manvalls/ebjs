@@ -44,7 +44,9 @@ function* unpacker(buffer,ref){
     relatedPort: yield buffer.unpack(labels.Number)
   };
 
-  if(utils.RTCIceCandidate) return new utils.RTCIceCandidate(dic);
+  try{ if(utils.RTCIceCandidate) return new utils.RTCIceCandidate(dic); }
+  catch(e){ }
+  
   return dic;
 }
 

@@ -4,7 +4,7 @@ var Connection = require('../connection.js'),
     labels = require('../definitions/labels.js'),
     bytes = Symbol(),
     connections = Symbol(),
-    RTCConfig = Symbol();
+    rtcConfig = Symbol();
 
 class RTCConnection extends Connection{
 
@@ -14,12 +14,12 @@ class RTCConnection extends Connection{
     opt = opt || {};
     this[bytes] = opt.bytes;
     this[connections] = opt.connections;
-    this[RTCConfig] = opt.RTCConfig;
+    this[rtcConfig] = opt.rtcConfig;
   }
 
   get bytes(){ return this[bytes]; }
   get connections(){ return this[connections]; }
-  get RTCConfig(){ return this[RTCConfig]; }
+  get rtcConfig(){ return this[rtcConfig]; }
 
   get [label](){ return labels.RTCConnection; }
 

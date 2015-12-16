@@ -22,7 +22,9 @@ function* unpacker(buffer,ref){
     sdp: yield buffer.unpack(labels.String)
   };
 
-  if(utils.RTCSessionDescription) return new utils.RTCSessionDescription(dic);
+  try{ if(utils.RTCSessionDescription) return new utils.RTCSessionDescription(dic); }
+  catch(e){ }
+
   return dic;
 }
 

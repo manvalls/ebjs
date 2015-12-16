@@ -54,7 +54,7 @@ l.FileList =                  34;
 l.RTCConnection =             41;
 l.RTCSessionDescription =     42;
 l.RTCIceCandidate =           43;
-/** RESERVED **/              44;
+l.MediaStream =               44;
 /** RESERVED **/              45;
 /** RESERVED **/              46;
 /** RESERVED **/              47;

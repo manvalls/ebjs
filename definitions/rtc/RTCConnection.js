@@ -22,10 +22,10 @@ function* packer(buffer,data){
   yield buffer.pack(relay.end,labels.Connection);
   yield buffer.pack(data.bytes,labels.Number);
   yield buffer.pack(data.connections,labels.Number);
-  yield buffer.pack(data.RTCConfig);
+  yield buffer.pack(data.rtcConfig);
 
   if(utils.RTCPeerConnection){
-    pc = new utils.RTCPeerConnection(data.RTCConfig || {iceServers: utils.iceServers});
+    pc = new utils.RTCPeerConnection(data.rtcConfig || {iceServers: utils.iceServers});
     if(typeof pc.createDataChannel != 'function') pc = null;
   }
 
@@ -47,7 +47,7 @@ function* unpacker(buffer,ref){
       data = new RTCConnection({
         bytes: yield buffer.unpack(labels.Number),
         connections: yield buffer.unpack(labels.Number),
-        RTCConfig: yield buffer.unpack()
+        rtcConfig: yield buffer.unpack()
       }),
       agent = data.end.lock(),
       col = new Collection(),
@@ -55,7 +55,7 @@ function* unpacker(buffer,ref){
       pc,fwd;
 
   if(utils.RTCPeerConnection){
-    pc = new utils.RTCPeerConnection(data.RTCConfig || {iceServers: utils.iceServers});
+    pc = new utils.RTCPeerConnection(data.rtcConfig || {iceServers: utils.iceServers});
     if(typeof pc.createDataChannel != 'function') pc = null;
   }
 

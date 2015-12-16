@@ -13,6 +13,7 @@ t(desc,function(){
   require('./basic.js')(ebjs);
   require('./extra.js')(ebjs);
   require('./binary.js')(ebjs);
+  require('./rtc.js')(ebjs);
 
   child = ebjs.getChild();
   child.setConstant(4e3,NaN);

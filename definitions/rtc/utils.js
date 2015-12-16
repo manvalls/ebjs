@@ -3,11 +3,6 @@ var prefix = require('u-proto/prefix'),
     walk = require('y-walk');
 
 exports.iceServers = [
-  {urls: 'stun:stun.l.google.com:19305'},
-  {urls: 'stun:stun1.l.google.com:19305'},
-  {urls: 'stun:stun2.l.google.com:19305'},
-  {urls: 'stun:stun3.l.google.com:19305'},
-  {urls: 'stun:stun4.l.google.com:19305'},
   {urls: 'stun:stun.l.google.com:19302'},
   {urls: 'stun:stun1.l.google.com:19302'},
   {urls: 'stun:stun2.l.google.com:19302'},
@@ -25,6 +20,7 @@ exports.iceServers = [
 exports.RTCPeerConnection = global[prefix]('RTCPeerConnection');
 exports.RTCSessionDescription = global[prefix]('RTCSessionDescription');
 exports.RTCIceCandidate = global[prefix]('RTCIceCandidate');
+exports.MediaStream = global[prefix]('MediaStream');
 
 if(!exports.RTCPeerConnection && global.RTCRtpSender){
   exports.RTCPeerConnection = require('ortc-adapter').RTCPeerConnection;
@@ -35,6 +31,9 @@ if(!exports.RTCPeerConnection && global.RTCRtpSender){
 if(exports.RTCPeerConnection) (function(){
   var pc = new exports.RTCPeerConnection({iceServers: []}),
       promise;
+
+  if(typeof pc.createDataChannel == 'function') exports.canCreateDataChannel = true;
+  if(typeof pc.addStream == 'function') exports.canAddStream = true;
 
   try{
     promise = pc.createOffer();
