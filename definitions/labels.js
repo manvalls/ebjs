@@ -61,3 +61,26 @@ l.MediaStream =               44;
 /** RESERVED **/              48;
 /** RESERVED **/              49;
 /** RESERVED **/              50;
+
+/*/--- y ---/*/
+
+l.Yielded =                   51;
+/** RESERVED **/              52;
+/** RESERVED **/              53;
+/** RESERVED **/              54;
+/** RESERVED **/              55;
+/** RESERVED **/              56;
+/** RESERVED **/              57;
+/** RESERVED **/              58;
+/** RESERVED **/              59;
+/** RESERVED **/              60;
+/** RESERVED **/              61;
+/** RESERVED **/              62;
+/** RESERVED **/              63;
+/** RESERVED **/              64;
+/** RESERVED **/              65;
+/** RESERVED **/              66;
+/** RESERVED **/              67;
+/** RESERVED **/              68;
+/** RESERVED **/              69;
+/** RESERVED **/              70;

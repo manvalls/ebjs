@@ -20,10 +20,16 @@ function* packer(buffer,data){
   try{
     data.then(function(value){
       conn.send([RESOLVE,value]);
+      conn.detach();
     },function(error){
       conn.send([REJECT,error]);
+      conn.detach();
     });
-  }catch(e){ conn.send([REJECT,e]); }
+  }catch(e){
+    conn.send([REJECT,e]);
+    conn.detach();
+  }
+  
 }
 
 function* unpacker(buffer,ref){
@@ -43,11 +49,13 @@ function onMessage(msg,d,resolve,reject){
     case RESOLVE:
       resolve(msg[1]);
       d.detach();
+      this.detach();
       break;
 
     case REJECT:
       reject(msg[1]);
       d.detach();
+      this.detach();
       break;
 
   }
