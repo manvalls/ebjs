@@ -66,7 +66,7 @@ l.MediaStream =               44;
 
 l.Yielded =                   51;
 l.Resolver =                  52;
-/** RESERVED **/              53;
+l.HybridYielded =             53;
 /** RESERVED **/              54;
 /** RESERVED **/              55;
 /** RESERVED **/              56;

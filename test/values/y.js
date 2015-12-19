@@ -110,4 +110,23 @@ module.exports = function(ebjs){
     assert.strictEqual(error1,'bar');
   });
 
+  t('HybridYielded',function*(){
+    var conns = yield utils.getPair(),
+        c1 = conns[0],
+        c2 = conns[1],
+        h1 = new Resolver.Hybrid(),
+        h2;
+
+    c1.open();
+    c2.open();
+
+    c1.send(h1);
+    h2 = yield c2.until('message');
+
+    h2.accept('foo');
+    assert.strictEqual(yield h1,yield h2);
+    assert.strictEqual(yield h1,'foo');
+
+  });
+
 };
