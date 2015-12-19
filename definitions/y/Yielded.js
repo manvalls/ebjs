@@ -1,4 +1,5 @@
 var Connection = require('../../connection.js'),
+    children = require('../../connection/children'),
     Resolver = require('y-resolver'),
     label = require('../../label.js'),
     labels = require('../labels.js'),
@@ -54,7 +55,7 @@ function* unpacker(buffer,ref){
   return res.yielded;
 }
 
-function onceMessage(msg,d,res){
+function* onceMessage(msg,d,res){
 
   if(msg instanceof Array) switch(msg[0]){
 
@@ -68,6 +69,7 @@ function onceMessage(msg,d,res){
 
   }
 
+  if(this[children]) yield this[children].is(0);
   this.detach();
 
 }

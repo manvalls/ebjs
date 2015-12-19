@@ -2,7 +2,8 @@ var t = require('u-test'),
     assert = require('assert'),
     Resolver = require('y-resolver'),
     label = require('../../label.js'),
-    utils = require('../connection/utils.js');
+    utils = require('../connection/utils.js'),
+    wait = require('y-timers/wait');
 
 module.exports = function(ebjs){
 
@@ -10,7 +11,7 @@ module.exports = function(ebjs){
     var conns = yield utils.getPair(),
         c1 = conns[0],
         c2 = conns[1],
-        yd,res,error;
+        yd,res,res2,error;
 
     c1.open();
     c2.open();
@@ -46,6 +47,13 @@ module.exports = function(ebjs){
     try{ yield yd; }
     catch(e){ error = e; }
     assert.strictEqual(error,'bar');
+
+    res = new Resolver();
+    c2.send(res.yielded);
+    yd = yield c1.until('message');
+    res.accept(wait(1000));
+    yd = yield yd;
+    yield yd;
   });
 
 };
