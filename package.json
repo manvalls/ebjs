@@ -7,15 +7,15 @@
     "binary-buffer": "^5.0.0",
     "detacher": "^1.4.3",
     "ortc-adapter": "^0.1.6",
-    "u-proto": "^5.4.2",
+    "u-proto": "^5.4.3",
     "websocket-driver": "^0.6.3",
     "y-callback": "^1.2.2",
-    "y-emitter": "^8.0.3",
-    "y-lock": "^2.0.3",
-    "y-resolver": "^6.1.1",
+    "y-emitter": "^9.0.1",
+    "y-lock": "^2.0.4",
+    "y-resolver": "^8.1.1",
     "y-setter": "^4.1.1",
     "y-timers": "^1.1.1",
-    "y-walk": "^10.0.0"
+    "y-walk": "^10.0.1"
   },
   "devDependencies": {
     "u-test": "^3.1.11"

@@ -56,4 +56,58 @@ module.exports = function(ebjs){
     yield yd;
   });
 
+  t('Resolver',function*(){
+    var conns = yield utils.getPair(),
+        c1 = conns[0],
+        c2 = conns[1],
+        res,rr,error1,error2;
+
+    c1.open();
+    c2.open();
+
+    res = new Resolver();
+    c1.send(res);
+    rr = yield c2.until('message');
+    rr.accept('foo');
+    assert.strictEqual(yield rr.yielded,yield res.yielded);
+    assert.strictEqual(yield rr.yielded,'foo');
+
+    res = new Resolver();
+    c1.send(res);
+    rr = yield c2.until('message');
+    res.accept('bar');
+    rr.accept('foo');
+    assert.strictEqual(yield rr.yielded,yield res.yielded);
+    assert.strictEqual(yield rr.yielded,'bar');
+
+    res = new Resolver();
+    c1.send(res);
+    rr = yield c2.until('message');
+    rr.reject('foo');
+
+    error1 = error2 = null;
+    try{ yield rr.yielded; }
+    catch(e){ error1 = e; }
+    try{ yield res.yielded; }
+    catch(e){ error2 = e; }
+
+    assert.strictEqual(error1,error2);
+    assert.strictEqual(error1,'foo');
+
+    res = new Resolver();
+    c1.send(res);
+    rr = yield c2.until('message');
+    res.reject('bar');
+    rr.reject('foo');
+
+    error1 = error2 = null;
+    try{ yield rr.yielded; }
+    catch(e){ error1 = e; }
+    try{ yield res.yielded; }
+    catch(e){ error2 = e; }
+
+    assert.strictEqual(error1,error2);
+    assert.strictEqual(error1,'bar');
+  });
+
 };
