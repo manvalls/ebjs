@@ -1,6 +1,7 @@
 var t = require('u-test'),
     assert = require('assert'),
     Resolver = require('y-resolver'),
+    Setter = require('y-setter'),
     label = require('../../label.js'),
     utils = require('../connection/utils.js'),
     wait = require('y-timers/wait');
@@ -127,6 +128,38 @@ module.exports = function(ebjs){
     assert.strictEqual(yield h1,yield h2);
     assert.strictEqual(yield h1,'foo');
 
+  });
+
+  t('Getter',function*(){
+    var conns = yield utils.getPair(),
+        c1 = conns[0],
+        c2 = conns[1],
+        setter = new Setter(),
+        getter;
+
+    c1.open();
+    c2.open();
+
+    c1.send(setter.getter);
+    getter = yield c2.until('message');
+    assert.strictEqual(getter.value,undefined);
+
+    setter.value = 'foo';
+    try{ assert.strictEqual(getter.value,'foo'); }
+    catch(e){
+      yield getter.touched();
+      assert.strictEqual(getter.value,'foo');
+    }
+
+    setter.value = 'foo bar';
+    try{ assert.strictEqual(getter.value,'foo bar'); }
+    catch(e){
+      yield getter.touched();
+      assert.strictEqual(getter.value,'foo bar');
+    }
+
+    setter.freeze();
+    yield getter.frozen();
   });
 
 };
