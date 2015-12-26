@@ -27,7 +27,7 @@ A non-normative list of common labels can be found inside [definitions/labels.js
 
 That being said, there are two kinds of definitions. The firsts and easiest ones are constants:
 
-```
+```javascript
 var someSymbol = Symbol();
 
 ebjs.setConstant(1001,someSymbol);
