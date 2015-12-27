@@ -190,7 +190,9 @@ module.exports = function(ebjs){
       setter1.getter.is('barr'),
       setter2.getter.is('barr')
     ];
-    
+
+    setter2.freeze();
+    yield setter1.getter.frozen();
   });
 
 };

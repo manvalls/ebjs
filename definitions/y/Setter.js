@@ -1,4 +1,5 @@
 var Connection = require('../../connection.js'),
+    children = require('../../connection/children'),
     Setter = require('y-setter'),
     walk = require('y-walk'),
     gtPacker = require('./Getter.js').packer,
@@ -23,6 +24,7 @@ function* packer(buffer,data){
 function* handleConnection(ack,setter){
   var getter = yield this.until('message');
 
+  getter.frozen().listen(setter.freeze,[],setter);
   getter.observe(getter.value,watcher,ack,setter);
   this.send();
 }
@@ -48,9 +50,11 @@ function* unpacker(buffer,ref){
   return new Setter(setter,getter);
 }
 
-function connectGetter(m,d,sent,getter,ack){
+function* connectGetter(m,d,sent,getter,ack){
   sent.getter.observe(sent.getter.value,fillAck,ack);
   getter.connect(sent);
+  if(this[children]) yield this[children].is(0);
+  this.detach();
 }
 
 function fillAck(v,ov,d,ack){

@@ -14,7 +14,7 @@
     "y-emitter": "^9.0.1",
     "y-lock": "^2.0.4",
     "y-resolver": "^8.1.4",
-    "y-setter": "^4.3.0",
+    "y-setter": "^4.5.0",
     "y-timers": "^1.1.1",
     "y-walk": "^10.0.2"
   },
