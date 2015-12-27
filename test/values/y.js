@@ -162,4 +162,35 @@ module.exports = function(ebjs){
     yield getter.frozen();
   });
 
+  t('Setter',function*(){
+    var conns = yield utils.getPair(),
+        c1 = conns[0],
+        c2 = conns[1],
+        setter1 = new Setter(5),
+        setter2;
+
+    c1.open();
+    c2.open();
+
+    c1.send(setter1);
+    setter2 = yield c2.until('message');
+    assert.strictEqual(setter2.value,setter1.value);
+
+    setter1.value = 'foo';
+    yield setter2.getter.is('foo');
+
+    setter2.value = 'bar';
+    yield [
+      setter1.getter.is('bar'),
+      setter2.getter.is('bar')
+    ];
+
+    setter2.value = 'barr';
+    yield [
+      setter1.getter.is('barr'),
+      setter2.getter.is('barr')
+    ];
+    
+  });
+
 };

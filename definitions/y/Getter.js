@@ -1,14 +1,16 @@
 var Connection = require('../../connection.js'),
     children = require('../../connection/children'),
+    walk = require('y-walk'),
     Setter = require('y-setter'),
     diff = require('input-diff'),
     label = require('../../label.js'),
     labels = require('../labels.js'),
 
     VALUE = 0,
-    DIFF = 1;
+    DIFF = 1,
+    ACK = 2;
 
-function* packer(buffer,data){
+function* packer(buffer,data,ack){
   var conn = new Connection(),
       ov,d;
 
@@ -18,41 +20,55 @@ function* packer(buffer,data){
 
   try{
     conn.open();
-    d = data.observe(ov,watcher,conn);
+    d = data.observe(ov,watcher,conn,ack);
     conn.until('detached').listen(detachIt,[d]);
-    data.frozen().listen(detachIt,[conn]);
+    walk(handleFreeze,[data,conn]);
   }catch(e){ }
 
 }
 
-function watcher(value,oldValue,d,conn){
+function watcher(value,oldValue,d,conn,ack){
+
+  if(ack && ack[0] === value){
+    ack.shift();
+    conn.send([ACK]);
+    return;
+  }
+
   if(typeof value == 'string' && typeof oldValue == 'string')
     conn.send([DIFF,diff.get(oldValue,value)]);
   else conn.send([VALUE,value]);
+
 }
 
 function detachIt(d){
   d.detach();
 }
 
-function* unpacker(buffer,ref){
+function* handleFreeze(data,conn){
+  yield data.frozen();
+  if(conn[children]) yield conn[children].is(0);
+  conn.detach();
+}
+
+function* unpacker(buffer,ref,ack){
   var setter = new Setter(),
       conn;
 
-  ref.set(setter.getter);
+  if(ref) ref.set(setter.getter);
   setter.value = yield buffer.unpack();
   conn = yield buffer.unpack(labels.Connection);
 
   try{
     conn.open();
-    conn.on('message',onMessage,setter);
+    conn.on('message',onMessage,setter,ack);
     conn.once('detached',freezeIt,setter);
   }catch(e){ }
 
   return setter.getter;
 }
 
-function onMessage(msg,d,setter){
+function onMessage(msg,d,setter,ack){
 
   if(msg instanceof Array) switch(msg[0]){
 
@@ -63,6 +79,11 @@ function onMessage(msg,d,setter){
     case DIFF:
       try{ setter.value = diff.apply(setter.value,msg[1]); }
       catch(e){ }
+      break;
+
+    case ACK:
+      if(!ack) return;
+      setter.value = ack.shift();
       break;
 
   }
@@ -77,3 +98,6 @@ module.exports = function(ebjs){
   ebjs.setPacker(labels.Getter,packer);
   ebjs.setUnpacker(labels.Getter,unpacker);
 };
+
+module.exports.packer = packer;
+module.exports.unpacker = unpacker;
