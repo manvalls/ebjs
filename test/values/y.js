@@ -195,4 +195,37 @@ module.exports = function(ebjs){
     yield setter1.getter.frozen();
   });
 
+  t('HybridGetter',function*(){
+    var conns = yield utils.getPair(),
+        c1 = conns[0],
+        c2 = conns[1],
+        h1 = new Setter.Hybrid(),
+        h2;
+
+    c1.open();
+    c2.open();
+
+    c1.send(h1);
+    h2 = yield c2.until('message');
+
+    h1.value = 'foo';
+    yield [
+      h2.is('foo'),
+      h1.is('foo')
+    ];
+
+    h1.value = 'bar';
+    yield [
+      h2.is('bar'),
+      h1.is('bar')
+    ];
+
+    h1.freeze();
+    yield [
+      h1.frozen(),
+      h2.frozen()
+    ];
+
+  });
+
 };

@@ -69,7 +69,7 @@ l.Resolver =                  52;
 l.HybridYielded =             53;
 l.Getter =                    54;
 l.Setter =                    55;
-/** RESERVED **/              56;
+l.HybridGetter =              56;
 /** RESERVED **/              57;
 /** RESERVED **/              58;
 /** RESERVED **/              59;
