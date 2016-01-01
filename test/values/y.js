@@ -167,7 +167,7 @@ module.exports = function(ebjs){
         c1 = conns[0],
         c2 = conns[1],
         setter1 = new Setter(5),
-        setter2;
+        setter2,i;
 
     c1.open();
     c2.open();
@@ -189,6 +189,27 @@ module.exports = function(ebjs){
     yield [
       setter1.getter.is('barr'),
       setter2.getter.is('barr')
+    ];
+
+    for(i = 0;i < 100;i++) setter2.value = i;
+    yield [
+      setter1.getter.is(i - 1),
+      setter2.getter.is(i - 1)
+    ];
+
+    conns = yield utils.getPair();
+    c1 = conns[0];
+    c2 = conns[1];
+    c1.open();
+    c2.open();
+
+    c2.send(setter2);
+    setter2 = yield c1.until('message');
+
+    for(i = 0;i < 100;i++) setter2.value = i;
+    yield [
+      setter1.getter.is(i - 1),
+      setter2.getter.is(i - 1)
     ];
 
     setter2.freeze();

@@ -8,7 +8,10 @@ var Connection = require('../../connection.js'),
     labels = require('../labels.js');
 
 function* packer(buffer,data){
-  var ack = [],
+  var ack = {
+        array: [],
+        offset: 0
+      },
       conn = new Connection();
 
   data = data || {};
@@ -30,12 +33,21 @@ function* handleConnection(ack,setter){
 }
 
 function watcher(v,ov,d,ack,setter){
-  ack.push(v);
+
+  ack.array.push(v);
+  if(ack.array.length > 5){
+    ack.offset++;
+    ack.array.shift();
+  }
+
   setter.value = v;
 }
 
 function* unpacker(buffer,ref){
-  var ack = [],
+  var ack = {
+        array: [],
+        offset: 0
+      },
       conn = yield buffer.unpack(labels.Connection),
       getter = yield walk(gtUnpacker,[buffer,null,ack]),
       setter = new Setter(),
@@ -58,7 +70,13 @@ function* connectGetter(m,d,sent,getter,ack){
 }
 
 function fillAck(v,ov,d,ack){
-  ack.push(v);
+
+  ack.array.push(v);
+  if(ack.array.length > 5){
+    ack.offset++;
+    ack.array.shift();
+  }
+
 }
 
 module.exports = function(ebjs){

@@ -28,10 +28,13 @@ function* packer(buffer,data,ack){
 }
 
 function watcher(value,oldValue,d,conn,ack){
+  var i;
 
-  if(ack && ack[0] === value){
-    ack.shift();
+  if(ack && ack.array[0] === value){
+    ack.array.shift();
+    for(i = 0;i < ack.offset;i++) conn.send([ACK]);
     conn.send([ACK]);
+    ack.offset = 0;
     return;
   }
 
@@ -83,7 +86,8 @@ function onMessage(msg,d,setter,ack){
 
     case ACK:
       if(!ack) return;
-      setter.value = ack.shift();
+      if(ack.offset > 0) ack.offset--;
+      else setter.value = ack.array.shift();
       break;
 
   }
