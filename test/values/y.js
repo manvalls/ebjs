@@ -2,6 +2,7 @@ var t = require('u-test'),
     assert = require('assert'),
     Resolver = require('y-resolver'),
     Setter = require('y-setter'),
+    Emitter = require('y-emitter'),
     label = require('../../label.js'),
     utils = require('../connection/utils.js'),
     wait = require('y-timers/wait');
@@ -247,6 +248,30 @@ module.exports = function(ebjs){
       h2.frozen()
     ];
 
+  });
+
+  t('Target',function*(){
+    var conns = yield utils.getPair(),
+        c1 = conns[0],
+        c2 = conns[1],
+        emitter = new Emitter(),
+        target1 = emitter.target,
+        target2,yd;
+
+    c1.open();
+    c2.open();
+
+    c1.send(target1);
+    target2 = yield c2.until('message');
+
+    emitter.set('ready');
+    yd = target2.until('event');
+
+    yield target2.until('ready');
+    emitter.give('event','foo');
+    assert.strictEqual(yield yd,'foo');
+
+    c1.detach();
   });
 
 };
