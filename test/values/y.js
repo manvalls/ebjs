@@ -265,11 +265,10 @@ module.exports = function(ebjs){
     target2 = yield c2.until('message');
 
     emitter.set('ready');
-    yd = target2.until('event');
-
     yield target2.until('ready');
-    emitter.give('event','foo');
-    assert.strictEqual(yield yd,'foo');
+    
+    emitter.queue('event','foo');
+    assert.strictEqual(yield target2.until('event'),'foo');
 
     c1.detach();
   });
