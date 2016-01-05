@@ -20,22 +20,22 @@ function* packer(buffer,data){
 
   try{
     conn.open();
-    conn.walk(handleConnection,[ack,data]);
+    conn.walk(handleConnection,[ack,data,this.burst]);
   }catch(e){ }
 }
 
-function* handleConnection(ack,setter){
+function* handleConnection(ack,setter,burst){
   var getter = yield this.until('message');
 
   getter.frozen().listen(setter.freeze,[],setter);
-  getter.observe(getter.value,watcher,ack,setter);
+  getter.observe(getter.value,watcher,ack,setter,burst);
   this.send();
 }
 
-function watcher(v,ov,d,ack,setter){
+function watcher(v,ov,d,ack,setter,burst){
 
   ack.array.push(v);
-  if(ack.array.length > 5){
+  if(ack.array.length > burst){
     ack.offset++;
     ack.array.shift();
   }
@@ -56,30 +56,31 @@ function* unpacker(buffer,ref){
   try{
     conn.open();
     conn.send(sent.getter);
-    conn.once('message',connectGetter,sent,setter.getter,ack);
+    conn.once('message',connectGetter,sent,setter.getter,ack,this.burst);
   }catch(e){ }
 
   return new Setter(setter,getter);
 }
 
-function* connectGetter(m,d,sent,getter,ack){
-  sent.getter.observe(sent.getter.value,fillAck,ack);
+function* connectGetter(m,d,sent,getter,ack,burst){
+  sent.getter.observe(sent.getter.value,fillAck,ack,burst);
   getter.connect(sent);
   if(this[children]) yield this[children].is(0);
   this.detach();
 }
 
-function fillAck(v,ov,d,ack){
+function fillAck(v,ov,d,ack,burst){
 
   ack.array.push(v);
-  if(ack.array.length > 5){
+  if(ack.array.length > burst){
     ack.offset++;
     ack.array.shift();
   }
 
 }
 
-module.exports = function(ebjs){
-  ebjs.setPacker(labels.Setter,packer);
-  ebjs.setUnpacker(labels.Setter,unpacker);
+module.exports = function(ebjs,constraints){
+  constraints = constraints || {burst: 5};
+  ebjs.setPacker(labels.Setter,packer,constraints);
+  ebjs.setUnpacker(labels.Setter,unpacker,constraints);
 };

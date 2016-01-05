@@ -6,28 +6,30 @@ var labels = require('../labels.js'),
     LISTEN = 0,
     IGNORE = 1,
     EVENT = 0,
-    STATE = 1;
+    STATE = 1,
+    UNSET = 2;
 
 function* packer(buffer,data){
   var conn = new Connection(),
       detachers = new Map(),
+      states = new Set(),
       d;
 
   conn.open();
-  d = conn.on('message',onPackerMsg,data,conn,detachers);
-  conn.once('detached',oncePackerDetached,d,detachers);
+  d = conn.on('message',onPackerMsg,data,conn,detachers,states,this.events,this.eventLength);
+  conn.once('detached',oncePackerDetached,d,detachers,states);
   yield buffer.pack(conn.end,labels.Connection);
 }
 
-function onPackerMsg(msg,d,target,conn,detachers){
+function onPackerMsg(msg,d,target,conn,detachers,states,events,eventLength){
 
   if(msg instanceof Array) switch(msg[0]){
 
     case LISTEN:
 
-      if(detachers.has(msg[1])) return;
+      if(detachers.has(msg[1]) || detachers.size >= events || msg[1].length > eventLength) return;
       detachers.set(msg[1],
-        target.on(msg[1],listener,msg[1],conn)
+        target.on(msg[1],listener,msg[1],conn,detachers,states,events)
       );
 
       break;
@@ -45,15 +47,27 @@ function onPackerMsg(msg,d,target,conn,detachers){
 
 }
 
-function listener(ev,d,en,conn){
-  if(this.is(en)) conn.send([STATE,en,ev]);
-  else conn.send([EVENT,en,ev]);
+function* listener(ev,d,en,conn,detachers,states,events){
+
+  if(this.is(en)){
+
+    conn.send([STATE,en,ev]);
+    if(!states.has(en) && states.size < events){
+      states.add(en);
+      yield this.untilNot(en);
+      states.delete(en);
+      if(conn.is('open')) conn.send([UNSET,en]);
+    }
+
+  }else conn.send([EVENT,en,ev]);
+
 }
 
-function oncePackerDetached(e,dt,d,detachers){
+function oncePackerDetached(e,dt,d,detachers,states){
   d.detach();
   for(d of detachers.values()) d.detach();
   detachers.clear();
+  states.clear();
 }
 
 function* unpacker(buffer,ref){
@@ -99,18 +113,25 @@ function onUnpackerMsg(msg,d,em){
   if(msg instanceof Array) switch(msg[0]){
 
     case EVENT:
+      if(!em.target.listened(msg[1])) return;
       em.give(msg[1],msg[2]);
       break;
 
     case STATE:
+      if(!em.target.listened(msg[1])) return;
       em.set(msg[1],msg[2]);
+      break;
+
+    case UNSET:
+      em.unset(msg[1]);
       break;
 
   }
 
 }
 
-module.exports = function(ebjs){
-  ebjs.setPacker(labels.Target,packer);
-  ebjs.setUnpacker(labels.Target,unpacker);
+module.exports = function(ebjs,constraints){
+  constraints = constraints || {events: 500, eventLength: 500};
+  ebjs.setPacker(labels.Target,packer,constraints);
+  ebjs.setUnpacker(labels.Target,unpacker,constraints);
 };

@@ -266,9 +266,11 @@ module.exports = function(ebjs){
 
     emitter.set('ready');
     yield target2.until('ready');
-    
+
     emitter.queue('event','foo');
     assert.strictEqual(yield target2.until('event'),'foo');
+    emitter.unset('ready');
+    yield target2.untilNot('ready');
 
     c1.detach();
   });
