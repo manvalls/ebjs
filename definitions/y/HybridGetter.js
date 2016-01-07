@@ -4,23 +4,11 @@ var Setter = require('y-setter'),
     labels = require('../labels.js');
 
 function* packer(buffer,data){
-  var setter = new Setter();
-  
-  yield buffer.pack(setter,labels.Setter);
-
-  try{
-    setter.getter.connect(data);
-    data.connect(setter);
-  }catch(e){}
+  yield buffer.pack(data,labels.Setter);
 }
 
 function* unpacker(buffer,ref){
-  var data = ref.set(new HybridGetter()),
-      setter = yield buffer.unpack(labels.Setter);
-
-  setter.getter.connect(data);
-  data.connect(setter);
-  return data;
+  return new HybridGetter(yield buffer.unpack(labels.Setter));
 }
 
 module.exports = function(ebjs){
