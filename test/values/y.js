@@ -30,7 +30,7 @@ module.exports = function(ebjs){
     res.accept('bar');
     assert.strictEqual(yield yd,'bar');
 
-    c2.send(Resolver.reject('foo'));
+    c2.send(Resolver.reject('foo',true));
     yd = yield c1.until('message');
     assert(yd.done);
 
@@ -44,7 +44,7 @@ module.exports = function(ebjs){
     yd = yield c1.until('message');
     assert(!yd.done);
 
-    res.reject('bar');
+    res.reject('bar',true);
     error = null;
     try{ yield yd; }
     catch(e){ error = e; }
@@ -85,7 +85,7 @@ module.exports = function(ebjs){
     res = new Resolver();
     c1.send(res);
     rr = yield c2.until('message');
-    rr.reject('foo');
+    rr.reject('foo',true);
 
     error1 = error2 = null;
     try{ yield rr.yielded; }
@@ -99,8 +99,8 @@ module.exports = function(ebjs){
     res = new Resolver();
     c1.send(res);
     rr = yield c2.until('message');
-    res.reject('bar');
-    rr.reject('foo');
+    res.reject('bar',true);
+    rr.reject('foo',true);
 
     error1 = error2 = null;
     try{ yield rr.yielded; }
@@ -271,6 +271,31 @@ module.exports = function(ebjs){
     assert.strictEqual(yield target2.until('event'),'foo');
     emitter.unset('ready');
     yield target2.untilNot('ready');
+
+    c1.detach();
+  });
+
+  t('Emitter',function*(){
+    var conns = yield utils.getPair(),
+        c1 = conns[0],
+        c2 = conns[1],
+        emitter1 = new Emitter(),
+        emitter2,yd;
+
+    c1.open();
+    c2.open();
+
+    c1.send(emitter1);
+    emitter2 = yield c2.until('message');
+
+    emitter1.set('ready');
+    yield emitter2.target.until('ready');
+
+    emitter2.queue('event','foo');
+    assert.strictEqual(yield emitter1.target.until('event'),'foo');
+    emitter2.unset('ready');
+    yield emitter1.target.untilNot('ready');
+    yield emitter2.target.untilNot('ready');
 
     c1.detach();
   });

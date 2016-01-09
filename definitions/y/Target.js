@@ -12,16 +12,18 @@ var labels = require('../labels.js'),
 function* packer(buffer,data){
   var conn = new Connection(),
       detachers = new Map(),
-      states = new Set(),
-      d;
+      d,d2;
 
   conn.open();
-  d = conn.on('message',onPackerMsg,data,conn,detachers,states,this.events,this.eventLength);
-  conn.once('detached',oncePackerDetached,d,detachers,states);
+  d = conn.on('message',onPackerMsg,data,conn,detachers,this.events,this.eventLength);
+  try{ d2 = data.on(data.stateUnset,onSU,conn); }
+  catch(e){ }
+
+  conn.once('detached',oncePackerDetached,d,d2,detachers);
   yield buffer.pack(conn.end,labels.Connection);
 }
 
-function onPackerMsg(msg,d,target,conn,detachers,states,events,eventLength){
+function onPackerMsg(msg,d,target,conn,detachers,events,eventLength){
 
   if(msg instanceof Array) switch(msg[0]){
 
@@ -29,7 +31,7 @@ function onPackerMsg(msg,d,target,conn,detachers,states,events,eventLength){
 
       if(detachers.has(msg[1]) || detachers.size >= events || msg[1].length > eventLength) return;
       detachers.set(msg[1],
-        target.on(msg[1],listener,msg[1],conn,detachers,states,events)
+        target.on(msg[1],listener,msg[1],conn,detachers,events)
       );
 
       break;
@@ -47,27 +49,23 @@ function onPackerMsg(msg,d,target,conn,detachers,states,events,eventLength){
 
 }
 
-function* listener(ev,d,en,conn,detachers,states,events){
-
-  if(this.is(en)){
-
-    conn.send([STATE,en,ev]);
-    if(!states.has(en) && states.size < events){
-      states.add(en);
-      yield this.untilNot(en);
-      states.delete(en);
-      if(conn.is('open')) conn.send([UNSET,en]);
-    }
-
-  }else conn.send([EVENT,en,ev]);
-
+function onSU(state,d,conn){
+  try{ conn.send([UNSET,state]); }
+  catch(e){ }
 }
 
-function oncePackerDetached(e,dt,d,detachers,states){
+function* listener(ev,d,en,conn,detachers,events){
+  if(this.is(en)) conn.send([STATE,en,ev]);
+  else conn.send([EVENT,en,ev]);
+}
+
+function oncePackerDetached(e,dt,d,d2,detachers){
   d.detach();
+  try{ d2.detach(); }
+  catch(e){ }
+
   for(d of detachers.values()) d.detach();
   detachers.clear();
-  states.clear();
 }
 
 function* unpacker(buffer,ref){

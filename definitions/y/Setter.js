@@ -33,7 +33,7 @@ function* handleConnection(ack,setter,burst){
 }
 
 function watcher(v,ov,d,ack,setter,burst){
-
+  
   ack.array.push(v);
   if(ack.array.length > burst){
     ack.offset++;
@@ -55,15 +55,15 @@ function* unpacker(buffer,ref){
 
   try{
     conn.open();
+    sent.getter.observe(sent.getter.value,fillAck,ack,this.burst);
     conn.send(sent.getter);
-    conn.once('message',connectGetter,sent,setter.getter,ack,this.burst);
+    conn.once('message',connectGetter,sent,setter.getter,ack);
   }catch(e){ }
 
   return new Setter(setter,getter);
 }
 
-function* connectGetter(m,d,sent,getter,ack,burst){
-  sent.getter.observe(sent.getter.value,fillAck,ack,burst);
+function* connectGetter(m,d,sent,getter,ack){
   getter.connect(sent);
   if(this[children]) yield this[children].is(0);
   this.detach();
