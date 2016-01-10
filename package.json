@@ -12,7 +12,7 @@
     "websocket-driver": "^0.6.4",
     "y-callback": "^1.2.2",
     "y-emitter": "^12.4.0",
-    "y-lock": "^2.0.4",
+    "y-lock": "^3.0.0",
     "y-resolver": "^9.1.0",
     "y-setter": "^5.1.0",
     "y-timers": "^1.1.1",

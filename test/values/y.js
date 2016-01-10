@@ -5,7 +5,8 @@ var t = require('u-test'),
     Emitter = require('y-emitter'),
     label = require('../../label.js'),
     utils = require('../connection/utils.js'),
-    wait = require('y-timers/wait');
+    wait = require('y-timers/wait'),
+    Lock = require('y-lock');
 
 module.exports = function(ebjs){
 
@@ -357,6 +358,28 @@ module.exports = function(ebjs){
     yd = h1.until('foo');
     h2.queue('foo','bar');
     assert.strictEqual(yield yd,'bar');
+  });
+
+  t('Lock',function*(){
+    var conns = yield utils.getPair(),
+        c1 = conns[0],
+        c2 = conns[1],
+        lock1 = new Lock(),
+        lock2;
+
+    c1.open();
+    c2.open();
+
+    c1.send(lock1);
+    lock2 = yield c2.until('message');
+
+    yield lock2.take();
+    lock2.give(2);
+    yield lock2.take(2);
+    lock1.give();
+    yield lock2.take();
+    lock2.give();
+    yield lock1.take();
   });
 
 };

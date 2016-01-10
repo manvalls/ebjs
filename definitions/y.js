@@ -6,7 +6,8 @@ var _Yielded = require('./y/Yielded.js'),
     _HybridGetter = require('./y/HybridGetter.js'),
     _Target = require('./y/Target.js'),
     _Emitter = require('./y/Emitter.js'),
-    _HybridTarget = require('./y/HybridTarget.js');
+    _HybridTarget = require('./y/HybridTarget.js'),
+    _Lock = require('./y/Lock.js');
 
 module.exports = function(ebjs){
   _Yielded(ebjs);
@@ -18,4 +19,5 @@ module.exports = function(ebjs){
   _Target(ebjs);
   _Emitter(ebjs);
   _HybridTarget(ebjs);
+  _Lock(ebjs);
 };

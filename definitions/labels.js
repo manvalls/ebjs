@@ -73,7 +73,7 @@ l.HybridGetter =              56;
 l.Target =                    57;
 l.Emitter =                   58;
 l.HybridTarget =              59;
-/** RESERVED **/              60;
+l.Lock =                      60;
 /** RESERVED **/              61;
 /** RESERVED **/              62;
 /** RESERVED **/              63;
