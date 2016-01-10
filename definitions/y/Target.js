@@ -2,6 +2,7 @@ var labels = require('../labels.js'),
     Connection = require('../../connection.js'),
     Emitter = require('y-emitter'),
     Collection = require('detacher/collection'),
+    emitter = '2JqDV4FmMF6yV2V',
 
     LISTEN = 0,
     IGNORE = 1,
@@ -55,8 +56,10 @@ function onSU(state,d,conn){
 }
 
 function* listener(ev,d,en,conn,detachers,events){
-  if(this.is(en)) conn.send([STATE,en,ev]);
-  else conn.send([EVENT,en,ev]);
+  if(this.is(en)){
+    conn.send([STATE,en,ev]);
+    if(this[emitter]) this[emitter].unset(en,true);
+  }else conn.send([EVENT,en,ev]);
 }
 
 function oncePackerDetached(e,dt,d,d2,detachers){
@@ -133,3 +136,5 @@ module.exports = function(ebjs,constraints){
   ebjs.setPacker(labels.Target,packer,constraints);
   ebjs.setUnpacker(labels.Target,unpacker,constraints);
 };
+
+module.exports.emitter = emitter;

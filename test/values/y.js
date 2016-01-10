@@ -300,4 +300,63 @@ module.exports = function(ebjs){
     c1.detach();
   });
 
+  t('HybridTarget',function*(){
+    var conns = yield utils.getPair(),
+        c1 = conns[0],
+        c2 = conns[1],
+        h1 = new Emitter.Hybrid(),
+        h2,yd;
+
+    c1.open();
+    c2.open();
+
+    c1.send(h1);
+    h2 = yield c2.until('message');
+
+    h1.set('ready');
+    yield h1.until('ready');
+    h2.unset('ready');
+
+    yield h1.untilNot('ready');
+    yield h2.untilNot('ready');
+
+    h2.set('ready');
+    yield h2.until('ready');
+    h1.unset('ready');
+
+    yield h1.untilNot('ready');
+    yield h2.untilNot('ready');
+
+    h1.set('ready');
+    yield h2.until('ready');
+    h1.unset('ready');
+
+    yield h1.untilNot('ready');
+    yield h2.untilNot('ready');
+
+    h2.set('ready');
+    yield h1.until('ready');
+    yield h2.until('ready');
+    h2.unset('ready');
+
+    yield h1.untilNot('ready');
+    yield h2.untilNot('ready');
+
+    yd = h2.until('foo');
+    h1.queue('foo','bar');
+    assert.strictEqual(yield yd,'bar');
+
+    yd = h1.until('foo');
+    h1.queue('foo','bar');
+    assert.strictEqual(yield yd,'bar');
+
+    yd = h2.until('foo');
+    h2.queue('foo','bar');
+    assert.strictEqual(yield yd,'bar');
+
+    yd = h1.until('foo');
+    h2.queue('foo','bar');
+    assert.strictEqual(yield yd,'bar');
+  });
+
 };

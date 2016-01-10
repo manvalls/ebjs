@@ -1,5 +1,6 @@
 var labels = require('../labels.js'),
     Connection = require('../../connection.js'),
+    emitter = require('./Target.js').emitter,
     Emitter = require('y-emitter');
 
 function* packer(buffer,data){
@@ -26,14 +27,15 @@ function* bindIt(target,d,emitter){
 function* unpacker(buffer,ref){
   var target = yield buffer.unpack(labels.Target),
       conn = yield buffer.unpack(labels.Connection),
-      emitter = new Emitter();
+      em = new Emitter();
 
   try{
     conn.open();
-    conn.send(emitter.target);
+    em.target[emitter] = em;
+    conn.send(em.target);
   }catch(e){ }
 
-  return new Emitter(emitter,target);
+  return new Emitter(em,target);
 }
 
 module.exports = function(ebjs){

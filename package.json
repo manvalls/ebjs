@@ -11,7 +11,7 @@
     "u-proto": "^5.4.4",
     "websocket-driver": "^0.6.4",
     "y-callback": "^1.2.2",
-    "y-emitter": "^12.2.0",
+    "y-emitter": "^12.4.0",
     "y-lock": "^2.0.4",
     "y-resolver": "^9.1.0",
     "y-setter": "^5.1.0",
