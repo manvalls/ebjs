@@ -39,7 +39,7 @@ function detachTest(getConns){
     assert(!c1.is('detached'));
     assert(!c2.is('detached'));
     c1.detach();
-    yield wait(500);
+    yield wait(600);
     assert(c1.is('detached'));
     assert(c2.is('detached'));
 
@@ -50,7 +50,7 @@ function detachTest(getConns){
     assert(!c1.is('detached'));
     assert(!c2.is('detached'));
     c2.detach();
-    yield wait(500);
+    yield wait(600);
     assert(c1.is('detached'));
     assert(c2.is('detached'));
   };
@@ -68,7 +68,7 @@ function detachParentTest(getConns){
     c2.open();
 
     p1.detach();
-    yield wait(500);
+    yield wait(600);
 
     assert(c1.is('detached'));
     assert(c2.is('detached'));
