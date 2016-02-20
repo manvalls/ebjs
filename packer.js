@@ -21,6 +21,10 @@ class Packer{
     return this[bb].read(buffer);
   }
 
+  sync(buffer){
+    return this[bb].write(buffer);
+  }
+
   pack(data){
     return walk(packIt,[data,this[wb],this[lock],this[bb]]);
   }

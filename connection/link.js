@@ -3,6 +3,7 @@ var parentData = 'ElKPs-yqyhY',
 
     IN = 0,
     OUT = 1,
+    sync = [ 101, 98, 106, 115, 47, 99, 111, 110, 110, 101, 99, 116, 105, 111, 110 ],
 
     walk,Collection,Setter,ebjs,Connection;
 
@@ -42,6 +43,7 @@ function linkConn(conn,opt){
   obj.unpacker = obj.instance.createUnpacker();
   packer = obj.instance.createPacker();
   unpacker = obj.instance.createUnpacker();
+  obj.packer.sync(sync);
 
   obj.agent = conn.end.lock();
   obj.children = new Setter();
@@ -121,7 +123,8 @@ function* processUnpacker(
   ){
   var data,map,sub,conn;
 
-  while(true){
+  if(!(yield unpacker.sync(sync))) agent.detach();
+  else while(true){
     data = yield unpacker.unpack();
     if(data instanceof Array) switch(data.length){
 
@@ -194,6 +197,7 @@ function* processUnpacker(
 
     }
   }
+
 }
 
 function unpackOrForward(e,d,sub,data,constraints){
