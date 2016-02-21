@@ -1,5 +1,5 @@
 var Connection = require('../../connection.js'),
-    children = require('../../connection/children'),
+    children = require('../../connection/utils/children.js'),
     walk = require('y-walk'),
     Setter = require('y-setter'),
     diff = require('input-diff'),

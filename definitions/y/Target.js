@@ -1,7 +1,7 @@
 var labels = require('../labels.js'),
     Connection = require('../../connection.js'),
     Emitter = require('y-emitter'),
-    Collection = require('detacher/collection'),
+    Detacher = require('detacher'),
     emitter = '2JqDV4FmMF6yV2V',
 
     LISTEN = 0,
@@ -74,7 +74,7 @@ function oncePackerDetached(e,dt,d,d2,detachers){
 function* unpacker(buffer,ref){
   var conn = yield buffer.unpack(labels.Connection),
       em = new Emitter(),
-      col = new Collection();
+      col = new Detacher();
 
   col.add(
     em.target.on(em.target.eventListened,sendEL,conn),

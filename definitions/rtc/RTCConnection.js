@@ -1,4 +1,4 @@
-var Collection = require('detacher/collection'),
+var Detacher = require('detacher'),
     label = require('../../label.js'),
     labels = require('../labels.js'),
     utils = require('./utils.js'),
@@ -6,7 +6,7 @@ var Collection = require('detacher/collection'),
     RTCConnection = require('../../connection/rtc.js'),
 
     handle = require('../../connection/handle/browser-like.js'),
-    link = require('../../connection/link.js'),
+    link = require('../../connection/utils/link.js'),
 
     HANDOVER_START = 0,
     HANDOVER_END = 1,
@@ -15,7 +15,7 @@ var Collection = require('detacher/collection'),
 function* packer(buffer,data){
   var relay = new Connection(),
       agent = data.lock(),
-      col = new Collection(),
+      col = new Detacher(),
       ctx = {queue: []},
       pc,fwd;
 
@@ -50,7 +50,7 @@ function* unpacker(buffer,ref){
         rtcConfig: yield buffer.unpack()
       }),
       agent = data.end.lock(),
-      col = new Collection(),
+      col = new Detacher(),
       ctx = {queue: []},
       pc,fwd;
 

@@ -5,7 +5,7 @@ var parentData = 'ElKPs-yqyhY',
     OUT = 1,
     sync = [ 101, 98, 106, 115, 47, 99, 111, 110, 110, 101, 99, 116, 105, 111, 110 ],
 
-    walk,Collection,Setter,ebjs,Connection;
+    walk,Detacher,Setter,ebjs,Connection;
 
 /*/ exports /*/
 
@@ -14,10 +14,10 @@ module.exports = linkConn;
 /*/ imports /*/
 
 walk = require('y-walk');
-Collection = require('detacher/collection');
+Detacher = require('detacher');
 Setter = require('y-setter');
-ebjs = require('../main.js');
-Connection = require('../connection.js');
+ebjs = require('../../main.js');
+Connection = require('../../connection.js');
 
 // Main
 
@@ -32,7 +32,7 @@ function linkConn(conn,opt){
   obj.counters.connections = obj.counters.connections || 0;
 
   obj.connections = {in: {}, out: {}};
-  obj.collection = new Collection();
+  obj.collection = new Detacher();
   obj.nextId = 0;
 
   obj.instance = obj.instance.getChild();

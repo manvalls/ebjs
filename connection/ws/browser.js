@@ -1,5 +1,5 @@
 var handle = require('../handle/browser-like.js'),
-    link = require('../link.js'),
+    link = require('../utils/link.js'),
     Connection = require('../../connection.js');
 
 module.exports = function(url,constraints){

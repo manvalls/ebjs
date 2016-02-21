@@ -1,5 +1,5 @@
 var Connection = require('../../connection.js'),
-    linkConn = require('../../connection/link.js'),
+    linkConn = require('../../connection/utils/link.js'),
     walk = require('y-walk'),
     wait = require('y-timers/wait');
 

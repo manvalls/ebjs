@@ -1,5 +1,5 @@
 var handle = require('../handle/driver.js'),
-    link = require('../link.js'),
+    link = require('../utils/link.js'),
     Connection = require('../../connection.js'),
 
     websocket = require('websocket-driver'),

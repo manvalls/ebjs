@@ -1,5 +1,5 @@
 var Connection = require('../../connection.js'),
-    children = require('../../connection/children'),
+    children = require('../../connection/utils/children.js'),
     Resolver = require('y-resolver'),
     label = require('../../label.js'),
     labels = require('../labels.js'),

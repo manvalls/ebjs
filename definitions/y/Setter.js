@@ -1,5 +1,5 @@
 var Connection = require('../../connection.js'),
-    children = require('../../connection/children'),
+    children = require('../../connection/utils/children.js'),
     Setter = require('y-setter'),
     walk = require('y-walk'),
     gtPacker = require('./Getter.js').packer,
@@ -33,7 +33,7 @@ function* handleConnection(ack,setter,burst){
 }
 
 function watcher(v,ov,d,ack,setter,burst){
-  
+
   ack.array.push(v);
   if(ack.array.length > burst){
     ack.offset++;
