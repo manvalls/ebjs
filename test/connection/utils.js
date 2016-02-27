@@ -8,7 +8,7 @@ exports.pipe = walk.wrap(function*(packer,unpacker){
 
   while(true){
     data = yield packer.read(1e3);
-    if(Math.random() > 0.5) yield wait(10);
+    if(Math.random() > 0.5) yield wait(Math.random() * 20);
     unpacker.write(data);
   }
 
@@ -136,6 +136,95 @@ exports.getSubconnectionBridge = walk.wrap(function*(constraints){
     c11,
     c12
   ];
+});
+
+exports.getBindPair = walk.wrap(function*(constraints){
+  var conns1 = yield exports.getPair(constraints),
+      conns2 = yield exports.getPair(constraints);
+
+  conns1[0].bind(conns2[0]);
+  return [conns1[1],conns2[1]];
+});
+
+exports.getBindSubPair = walk.wrap(function*(constraints){
+  var conns1 = yield exports.getSubPair(constraints),
+      conns2 = yield exports.getSubPair(constraints);
+
+  conns1[0].bind(conns2[0]);
+  return [conns1[1],conns2[1]];
+});
+
+exports.getSubBindPair = walk.wrap(function*(constraints){
+  var conns = yield exports.getBindPair(constraints),
+      c1 = conns[0],
+      c2 = conns[1],
+      sc1 = new Connection(),
+      sc2;
+
+  sc2 = c2.until('message');
+  c1.open();
+  c2.open();
+
+  c1.send(sc1.end);
+  sc2 = yield sc2;
+
+  return [sc1,sc2,c1,c2];
+});
+
+exports.getSubBindSubPair = walk.wrap(function*(constraints){
+  var conns = yield exports.getBindSubPair(constraints),
+      c1 = conns[0],
+      c2 = conns[1],
+      sc1 = new Connection(),
+      sc2;
+
+  sc2 = c2.until('message');
+  c1.open();
+  c2.open();
+
+  c1.send(sc1.end);
+  sc2 = yield sc2;
+
+  return [sc1,sc2,c1,c2];
+});
+
+exports.getSubSubBindPair = walk.wrap(function*(constraints){
+  var conns = yield exports.getSubBindPair(constraints),
+      c1 = conns[0],
+      c2 = conns[1],
+      sc1 = new Connection(),
+      sc2;
+
+  sc2 = c2.until('message');
+  c1.open();
+  c2.open();
+
+  c1.send(sc1.end);
+  sc2 = yield sc2;
+
+  return [sc1,sc2,c1,c2];
+});
+
+exports.getHalfSubconnection = walk.wrap(function*(constraints){
+  var conns1 = yield exports.getPair(constraints),
+      conns2 = yield exports.getPair(constraints);
+
+  conns1[0].open();
+  conns1[1].open();
+  conns1[0].send(conns2[0]);
+
+  return [yield conns1[1].until('message'),conns2[1],conns1[1],conns1[0]];
+});
+
+exports.getSubHalfSubconnection = walk.wrap(function*(constraints){
+  var conns1 = yield exports.getSubPair(constraints),
+      conns2 = yield exports.getSubPair(constraints);
+
+  conns1[0].open();
+  conns1[1].open();
+  conns1[0].send(conns2[0]);
+
+  return [yield conns1[1].until('message'),conns2[1],conns1[1],conns1[0]];
 });
 
 function detach(e,d,c){

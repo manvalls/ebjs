@@ -156,6 +156,33 @@ t('Connection - ' + (global.navigator ? 'browser' : 'node.js'),function*(){
     assert(!!error);
   });
 
+  t('Bind and transfer',function*(){
+    var c1 = new Connection(),
+        c2 = new Connection(),
+        c3 = new Connection();
+
+    c1.open();
+    c2.open();
+
+    c1.end.transfer('foo','bar');
+    c2.end.transfer('bar','foo');
+
+    c1.end.bind(c3);
+    c3.end.bind(c2.end);
+
+    assert.strictEqual(c3.foo,'bar');
+    assert.strictEqual(c3.end.bar,'foo');
+
+    assert.strictEqual(c1.end.bar,'foo');
+    assert.strictEqual(c2.end.foo,'bar');
+
+    c1.end.transfer('lorem','ipsum');
+    assert.strictEqual(c2.end.lorem,'ipsum');
+
+    c1.send('foo');
+    assert.strictEqual(yield c2.until('message'),'foo');
+  });
+
   require('./connection/link.js');
 
 });

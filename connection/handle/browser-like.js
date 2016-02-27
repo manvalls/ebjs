@@ -1,8 +1,12 @@
 var tick = require('y-timers/tick'),
-    walk = require('y-walk');
+    walk = require('y-walk'),
+    sync = [ 101, 98, 106, 115, 47, 99, 111, 110, 110, 101, 99, 116, 105, 111, 110 ];
 
 module.exports = function(ch,connection,packer,unpacker,maxBytes){
   var walker;
+
+  packer.sync(sync);
+  unpacker.sync(sync).listen(detachIfNot,[connection]);
 
   function handleState(){
 
@@ -81,6 +85,10 @@ function* handlePacker(packer,ch){
 }
 
 // Utils
+
+function detachIfNot(conn){
+  if(!this.value) conn.detach();
+}
 
 function getCode(char){
   return char.charCodeAt(0);

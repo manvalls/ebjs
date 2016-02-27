@@ -74,11 +74,12 @@ function oncePackerDetached(e,dt,d,d2,detachers){
 function* unpacker(buffer,ref){
   var conn = yield buffer.unpack(labels.Connection),
       em = new Emitter(),
-      col = new Detacher();
+      col = new Detacher(),
+      events = new Set();
 
   col.add(
-    em.target.on(em.target.eventListened,sendEL,conn),
-    em.target.on(em.target.eventIgnored,sendEI,conn)
+    em.target.on(em.target.eventListened,sendEL,conn,events),
+    em.target.on(em.target.eventIgnored,sendEI,conn,events)
   );
 
   conn.once('detached',onceUnpackerDetached,col);
@@ -87,7 +88,7 @@ function* unpacker(buffer,ref){
 
     conn.open();
     col.add(
-      conn.on('message',onUnpackerMsg,em)
+      conn.on('message',onUnpackerMsg,em,events)
     );
 
   }catch(e){ }
@@ -99,27 +100,29 @@ function onceUnpackerDetached(e,d,col){
   col.detach();
 }
 
-function sendEL(event,d,conn){
+function sendEL(event,d,conn,events){
+  events.add(event);
   try{ conn.send([LISTEN,event]); }
   catch(e){ }
 }
 
-function sendEI(event,d,conn){
+function sendEI(event,d,conn,events){
+  events.delete(event);
   try{ conn.send([IGNORE,event]); }
   catch(e){ }
 }
 
-function onUnpackerMsg(msg,d,em){
+function onUnpackerMsg(msg,d,em,events){
 
   if(msg instanceof Array) switch(msg[0]){
 
     case EVENT:
-      if(!em.target.listened(msg[1])) return;
+      if(!events.has(msg[1])) return;
       em.give(msg[1],msg[2]);
       break;
 
     case STATE:
-      if(!em.target.listened(msg[1])) return;
+      if(!events.has(msg[1])) return;
       em.set(msg[1],msg[2]);
       break;
 

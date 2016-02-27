@@ -28,8 +28,8 @@ class EbjsInstance{
 
   // Pack
 
-  createPacker(){
-    return new Packer(this);
+  createPacker(binaryBuffer){
+    return new Packer(this,binaryBuffer);
   }
 
   pack(data,buffer){
@@ -41,8 +41,8 @@ class EbjsInstance{
 
   // Unpack
 
-  createUnpacker(){
-    return new Unpacker(this);
+  createUnpacker(binaryBuffer){
+    return new Unpacker(this,binaryBuffer);
   }
 
   unpack(buffer){

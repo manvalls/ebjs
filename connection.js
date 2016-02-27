@@ -5,6 +5,8 @@ var Target = require('y-emitter').Target,
     emitter = Symbol(),
     end = Symbol(),
     agent = Symbol(),
+    transfer = 'zsSfN-9jbQe',
+    pipedFrom = 'zsW5X-3e3QQ',
 
     child = false;
 
@@ -12,6 +14,7 @@ class Connection extends Target{
 
   constructor(){
     super(emitter);
+    this[transfer] = new Map();
 
     if(!child){
       child = true;
@@ -36,7 +39,7 @@ class Connection extends Target{
     this[emitter].set('open');
   }
 
-  lock(lf,lt){
+  lock(){
     if(!this[end]) throw new Error('Cannot lock a detached connection');
     if(this.is('open')) throw new Error('Cannot lock an open connection');
     if(this.is('locked')) throw new Error('Connection already locked');
@@ -64,6 +67,40 @@ class Connection extends Target{
     if(e[agent]) e[agent][emitter].set('detached');
     this[emitter].set('detached');
     e[emitter].set('detached');
+  }
+
+  transfer(key,value){
+    if(this[pipedFrom]){
+      this[pipedFrom][key] = value;
+      if(this[pipedFrom].end) this[pipedFrom].end.transfer(key,value);
+    }else this[transfer].set(key,value);
+  }
+
+  bind(connection){
+    var src,dest,entry;
+
+    for(entry of connection[transfer].entries()){
+      this[entry[0]] = entry[1];
+      this.end.transfer(entry[0],entry[1]);
+    }
+
+    connection[transfer].clear();
+    connection[pipedFrom] = this;
+
+    for(entry of this[transfer].entries()){
+      connection[entry[0]] = entry[1];
+      connection.end.transfer(entry[0],entry[1]);
+    }
+
+    this[transfer].clear();
+    this[pipedFrom] = connection;
+
+    src = this.lock();
+    dest = connection.lock();
+    src.on('message',pipeMsg,dest);
+    src.once('detached',pipeDtc,dest);
+    dest.on('message',pipeMsg,src);
+    dest.once('detached',pipeDtc,src);
   }
 
   get end(){ return this[end]; }
@@ -102,6 +139,14 @@ function* giveLM(target,message){
   yield target.until('locked');
   yield target[agent].until('message').listeners.gt(0);
   target[agent][emitter].give('message',message);
+}
+
+function pipeMsg(msg,d,dest){
+  dest.send(msg);
+}
+
+function pipeDtc(e,d,dest){
+  dest.detach();
 }
 
 /*/ exports /*/

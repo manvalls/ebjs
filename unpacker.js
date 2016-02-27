@@ -11,9 +11,9 @@ var BinaryBuffer = require('binary-buffer'),
 
 class Unpacker{
 
-  constructor(ebjs){
+  constructor(ebjs,binaryBuffer){
     this[lock] = new Lock();
-    this[bb] = new BinaryBuffer();
+    this[bb] = binaryBuffer || new BinaryBuffer();
     this[rb] = new ReadBuffer(this[bb],ebjs);
   }
 

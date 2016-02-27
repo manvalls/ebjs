@@ -2,10 +2,14 @@ var walk = require('y-walk'),
     Cb = require('y-callback'),
     unpacker = Symbol(),
     connection = Symbol(),
-    maxBytes = Symbol();
+    maxBytes = Symbol(),
+    sync = [ 101, 98, 106, 115, 47, 99, 111, 110, 110, 101, 99, 116, 105, 111, 110 ];
 
 module.exports = function(stream,c,packer,up,mb){
   var readable,writable,walker;
+
+  packer.sync(sync);
+  up.sync(sync).listen(detachIfNot,[c]);
 
   if(stream.constructor == Object){
     writable = stream.write;
@@ -55,4 +59,8 @@ function* handlePacker(packer,writable){
     yield cb;
   }
 
+}
+
+function detachIfNot(conn){
+  if(!this.value) conn.detach();
 }

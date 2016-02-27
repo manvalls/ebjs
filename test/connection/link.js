@@ -1,8 +1,7 @@
 var utils = require('./utils.js'),
     Connection = require('../../connection.js'),
     t = require('u-test'),
-    assert = require('assert'),
-    wait = require('y-timers/wait');
+    assert = require('assert');
 
 // Factories
 
@@ -39,9 +38,8 @@ function detachTest(getConns){
     assert(!c1.is('detached'));
     assert(!c2.is('detached'));
     c1.detach();
-    yield wait(600);
-    assert(c1.is('detached'));
-    assert(c2.is('detached'));
+    yield c1.until('detached');
+    yield c2.until('detached');
 
     conns = yield getConns();
     c1 = conns[0];
@@ -50,9 +48,8 @@ function detachTest(getConns){
     assert(!c1.is('detached'));
     assert(!c2.is('detached'));
     c2.detach();
-    yield wait(600);
-    assert(c1.is('detached'));
-    assert(c2.is('detached'));
+    yield c1.until('detached');
+    yield c2.until('detached');
   };
 }
 
@@ -68,12 +65,10 @@ function detachParentTest(getConns){
     c2.open();
 
     p1.detach();
-    yield wait(600);
-
-    assert(c1.is('detached'));
-    assert(c2.is('detached'));
-    assert(p1.is('detached'));
-    assert(p2.is('detached'));
+    yield c1.until('detached');
+    yield c2.until('detached');
+    yield p1.until('detached');
+    yield p2.until('detached');
   };
 }
 
@@ -94,9 +89,8 @@ function constraintsTest(getConns,level){
       assert.strictEqual((yield msg).byteLength,50);
 
       c1.send(new ArrayBuffer(10e3));
-      yield wait(1000);
-      assert(c1.is('detached'));
-      assert(c2.is('detached'));
+      yield c1.until('detached');
+      yield c2.until('detached');
     });
 
     t('Connections',function*(){
@@ -198,6 +192,82 @@ t('link',function(){
       t('Parent connection detaching',detachParentTest(utils.getSubBridge));
 
       t('Constraints',constraintsTest(utils.getSubBridge,2));
+
+    });
+
+  });
+
+  t('Bind',function(){
+
+    t('Basic send and receive',sendTest(utils.getBindPair));
+
+    t('Basic detaching',detachTest(utils.getBindPair));
+
+    t('Subconnection',function(){
+
+      t('Basic send and receive',sendTest(utils.getSubBindPair));
+
+      t('Basic detaching',detachTest(utils.getSubBindPair));
+
+      t('Parent connection detaching',detachParentTest(utils.getSubBindPair));
+
+      t('Constraints',constraintsTest(utils.getSubBindPair,1));
+
+      t('Subconnection',function(){
+
+        t('Basic send and receive',sendTest(utils.getSubSubBindPair));
+
+        t('Basic detaching',detachTest(utils.getSubSubBindPair));
+
+        t('Parent connection detaching',detachParentTest(utils.getSubSubBindPair));
+
+        t('Constraints',constraintsTest(utils.getSubSubBindPair,2));
+
+      });
+
+    });
+
+    t('Sub-bind',function(){
+
+      t('Basic send and receive',sendTest(utils.getBindSubPair));
+
+      t('Basic detaching',detachTest(utils.getBindSubPair));
+
+      t('Subconnection',function(){
+
+        t('Basic send and receive',sendTest(utils.getSubBindSubPair));
+
+        t('Basic detaching',detachTest(utils.getSubBindSubPair));
+
+        t('Parent connection detaching',detachParentTest(utils.getSubBindSubPair));
+
+        t('Constraints',constraintsTest(utils.getSubBindSubPair,2));
+
+      });
+
+    });
+
+  });
+
+  t('Half subconnection',function(){
+
+    t('Basic send and receive',sendTest(utils.getHalfSubconnection));
+
+    t('Basic detaching',detachTest(utils.getHalfSubconnection));
+
+    t('Parent connection detaching',detachParentTest(utils.getHalfSubconnection));
+
+    t('Constraints',constraintsTest(utils.getHalfSubconnection,1));
+
+    t('Subhalf subconnection',function(){
+
+      t('Basic send and receive',sendTest(utils.getSubHalfSubconnection));
+
+      t('Basic detaching',detachTest(utils.getSubHalfSubconnection));
+
+      t('Parent connection detaching',detachParentTest(utils.getSubHalfSubconnection));
+
+      t('Constraints',constraintsTest(utils.getSubHalfSubconnection,2));
 
     });
 

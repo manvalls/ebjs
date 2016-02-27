@@ -2,12 +2,16 @@ var walk = require('y-walk'),
     walker = Symbol(),
     unpacker = Symbol(),
     connection = Symbol(),
-    maxBytes = Symbol();
+    maxBytes = Symbol(),
+    sync = [ 101, 98, 106, 115, 47, 99, 111, 110, 110, 101, 99, 116, 105, 111, 110 ];
 
 module.exports = function(driver,c,packer,up,mb){
   driver[connection] = c;
   driver[unpacker] = up;
   driver[maxBytes] = mb;
+
+  packer.sync(sync);
+  up.sync(sync).listen(detachIfNot,[c]);
 
   driver.on('open',handleState);
   driver.on('error',handleState);
@@ -68,6 +72,10 @@ function* handlePacker(packer,driver){
 }
 
 // Utils
+
+function detachIfNot(conn){
+  if(!this.value) conn.detach();
+}
 
 function getCode(char){
   return char.charCodeAt(0);

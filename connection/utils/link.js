@@ -1,9 +1,13 @@
-var parentData = 'ElKPs-yqyhY',
+var BinaryBuffer = require('binary-buffer'),
     children = require('./children.js'),
+
+    parentData = 'ElKPs-yqyhY',
+    parentTransfer = 'R7eiK-VaDBc',
+    extBB = 'ERCU4-C8gfJ',
+    extTransfer = 'R7jgC-31h7Y',
 
     IN = 0,
     OUT = 1,
-    sync = [ 101, 98, 106, 115, 47, 99, 111, 110, 110, 101, 99, 116, 105, 111, 110 ],
 
     walk,Detacher,Setter,ebjs,Connection;
 
@@ -23,7 +27,9 @@ Connection = require('../../connection.js');
 
 function linkConn(conn,opt){
   var obj = {},
-      packer,unpacker;
+      pbb = new BinaryBuffer(),
+      ubb = new BinaryBuffer(),
+      packer,unpacker,args;
 
   opt = opt || {};
   obj.instance = opt.ebjs || ebjs;
@@ -39,31 +45,36 @@ function linkConn(conn,opt){
   obj.instance.setPacker(Connection,packerFn,obj);
   obj.instance.setUnpacker(Connection,unpackerFn,obj);
 
-  obj.packer = obj.instance.createPacker();
-  obj.unpacker = obj.instance.createUnpacker();
+  obj.packer = obj.instance.createPacker(pbb);
+  obj.unpacker = obj.instance.createUnpacker(ubb);
   packer = obj.instance.createPacker();
   unpacker = obj.instance.createUnpacker();
-  obj.packer.sync(sync);
+
+  conn[extBB] = pbb;
+  conn.transfer(extTransfer,pbb);
 
   obj.agent = conn.end.lock();
   obj.children = new Setter();
   conn[children] = conn.end[children] = obj.children.getter;
   obj.children.value = 0;
 
+  args = [
+    obj.unpacker,
+    obj.packer,
+    unpacker,
+    obj.connections,
+    obj.constraints,
+    obj.counters,
+    obj.instance,
+    obj.agent,
+    obj.children
+  ];
+
   obj.collection.add(
     obj.agent.on('message',onMessage,packer),
     obj.agent.once('detached',onceDetached,obj.collection,obj.connections.in,obj.connections.out),
-    walk(processUnpacker,[
-      obj.unpacker,
-      obj.packer,
-      unpacker,
-      obj.connections,
-      obj.constraints,
-      obj.counters,
-      obj.instance,
-      obj.agent,
-      obj.children
-    ]),
+    conn.once('open',tryToForward,ubb,obj.collection,obj.unpacker,obj.agent,args),
+    conn.once('locked',tryToForward,ubb,obj.collection,obj.unpacker,obj.agent,args),
     walk(processTopUnpacker,[unpacker,obj.agent]),
     walk(processTopPacker,[packer,obj.packer])
   );
@@ -110,21 +121,62 @@ function onceDetached(ev,d,collection,inConns,outConns){
 
 }
 
-function* processUnpacker(
-    unpacker,
-    packer,
-    topUnpacker,
-    connections,
-    constraints,
-    counters,
-    ebjs,
-    agent,
-    children
-  ){
+function* tryToForward(e,d,ubb,collection,unpacker,agent,args){
+
+  if(this[parentTransfer]) collection.add(
+    walk(forwardToParent,[this[parentTransfer],ubb])
+  );
+  else if(this[extTransfer]) collection.add(
+    walk(forwardToExt,[this[extTransfer],ubb])
+  );
+  else collection.add(
+    walk(processUnpacker,args)
+  );
+
+}
+
+function* forwardToParent(parent,bb){
+  var buffer = new Uint8Array(1e3);
+
+  bb.autoFlush = true;
+  while(true) yield parent.packer.pack([
+    parent.dir,
+    parent.id,
+    yield bb.read(buffer)
+  ]);
+
+}
+
+function* forwardToExt(ext,bb){
+  var buffer = new Uint8Array(1e3),
+      yd;
+
+  bb.autoFlush = true;
+  while(true){
+
+    yd = ext.write(
+      yield bb.read(buffer)
+    );
+
+    ext.flush();
+    yield yd;
+
+  }
+
+}
+
+function* processUnpacker(  unpacker,
+                            packer,
+                            topUnpacker,
+                            connections,
+                            constraints,
+                            counters,
+                            ebjs,
+                            agent,
+                            children ){
   var data,map,sub,conn;
 
-  if(!(yield unpacker.sync(sync))) agent.detach();
-  else while(true){
+  while(true){
     data = yield unpacker.unpack();
     if(data instanceof Array) switch(data.length){
 
@@ -191,8 +243,11 @@ function* processUnpacker(
         sub = map[data[1]];
         if(!sub) break;
 
-        sub.connection.end.once('open',unpackOrForward,sub,data[2],constraints);
-        sub.connection.end.once('locked',unpackOrForward,sub,data[2],constraints);
+        if(sub.connection.end){
+          sub.connection.end.once('open',unpackOrForward,sub,data[2],constraints);
+          sub.connection.end.once('locked',unpackOrForward,sub,data[2],constraints);
+        }
+
         break;
 
     }
@@ -202,13 +257,15 @@ function* processUnpacker(
 
 function unpackOrForward(e,d,sub,data,constraints){
 
-  if(sub.connection.end[parentData])
-    sub.connection.end[parentData].packer.pack([
-      sub.connection[parentData].dir,
-      sub.connection[parentData].id,
-      data
-    ]);
-  else{
+  if(sub.connection.end[parentData]) sub.connection.end[parentData].packer.pack([
+    sub.connection.end[parentData].dir,
+    sub.connection.end[parentData].id,
+    data
+  ]);
+  else if(sub.connection.end[extBB]){
+    sub.connection.end[extBB].write(data);
+    sub.connection.end[extBB].flush();
+  }else{
     sub.unpacker.write(data);
     if(constraints.bytes && sub.unpacker.bytesSinceFlushed > constraints.bytes)
       sub.connection.detach();
@@ -251,6 +308,7 @@ function* packerFn(buffer,data){
     id: id
   };
 
+  data.end.transfer(parentTransfer,data.end[parentData]);
   data.once('detached',remove,this.packer,this.counters,this.connections,this.children,IN,id);
   conn.collection.add(
     walk(processSubPacker,[this.packer,conn.packer,IN,id])
