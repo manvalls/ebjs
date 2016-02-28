@@ -7,6 +7,7 @@ var Target = require('y-emitter').Target,
     agent = Symbol(),
     transfer = 'zsSfN-9jbQe',
     pipedFrom = 'zsW5X-3e3QQ',
+    isConn = '2PTw6-VLbq2',
 
     child = false;
 
@@ -103,8 +104,13 @@ class Connection extends Target{
     dest.once('detached',pipeDtc,src);
   }
 
+  static is(conn){
+    return conn && conn[isConn];
+  }
+
   get end(){ return this[end]; }
   get [label](){ return 8; }
+  get [isConn](){ return true; }
 
 }
 

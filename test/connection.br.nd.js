@@ -7,6 +7,10 @@ t('Connection - ' + (global.navigator ? 'browser' : 'node.js'),function*(){
   var conn = new Connection(),
       msg;
 
+  assert(Connection.is(conn));
+  assert(!Connection.is());
+  assert(!Connection.is(5));
+
   conn.open();
   conn.end.open();
 
