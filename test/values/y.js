@@ -162,6 +162,13 @@ module.exports = function(ebjs){
 
     setter.freeze();
     yield getter.frozen();
+
+    setter = new Setter();
+    c1.send(setter.getter);
+    getter = yield c2.until('message');
+
+    c1.detach();
+    yield getter.frozen();
   });
 
   t('Setter',function*(){
@@ -198,6 +205,9 @@ module.exports = function(ebjs){
       setter1.getter.is(i - 1),
       setter2.getter.is(i - 1)
     ];
+
+    c1.detach();
+    yield setter2.getter.frozen();
 
     conns = yield utils.getPair();
     c1 = conns[0];

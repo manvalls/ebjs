@@ -37,7 +37,11 @@ function linkConn(conn,opt){
   obj.constraints = opt.constraints || {};
   obj.counters.connections = obj.counters.connections || 0;
 
-  obj.connections = {in: {}, out: {}};
+  obj.connections = {
+    in: new Map(),
+    out: new Map()
+  };
+
   obj.collection = new Detacher();
   obj.nextId = 0;
 
@@ -103,22 +107,11 @@ function onMessage(message,d,packer){
 }
 
 function onceDetached(ev,d,collection,inConns,outConns){
-  var keys,i,j;
+  var conn,i,j;
 
   collection.detach();
-
-  keys = Object.keys(inConns);
-  for(j = 0;j < keys.length;j++){
-    i = keys[j];
-    inConns[i].connection.detach();
-  }
-
-  keys = Object.keys(outConns);
-  for(j = 0;j < keys.length;j++){
-    i = keys[j];
-    outConns[i].connection.detach();
-  }
-
+  for(conn of inConns.values()) conn.connection.detach();
+  for(conn of outConns.values()) conn.connection.detach();
 }
 
 function* tryToForward(e,d,ubb,collection,unpacker,agent,args){
@@ -196,11 +189,11 @@ function* processUnpacker(  unpacker,
           conn = new Connection();
           conn.once('detached',remove,packer,counters,connections,children,OUT,data[0]);
 
-          connections.in[data[0]] = linkConn(conn,{
+          connections.in.set(data[0],linkConn(conn,{
             ebjs: ebjs,
             counters: counters,
             constraints: constraints
-          });
+          }));
 
           conn[parentData] = {
             packer: packer,
@@ -225,7 +218,7 @@ function* processUnpacker(  unpacker,
         else if(data[0] == OUT) map = connections.out;
         else break;
 
-        sub = map[data[1]];
+        sub = map.get(data[1]);
         if(!sub) break;
 
         delete map[data[1]];
@@ -240,7 +233,7 @@ function* processUnpacker(  unpacker,
         else if(data[0] == OUT) map = connections.out;
         else break;
 
-        sub = map[data[1]];
+        sub = map.get(data[1]);
         if(!sub) break;
 
         if(sub.connection.end){
@@ -300,7 +293,7 @@ function* packerFn(buffer,data){
   this.packer.pack([id]);
   yield buffer.pack(id,Number);
   this.nextId = (this.nextId + 1) % 1e15;
-  this.connections.out[id] = conn;
+  this.connections.out.set(id,conn);
 
   data.end[parentData] = {
     packer: this.packer,
@@ -325,7 +318,7 @@ function* unpackerFn(buffer,ref){
   var id = yield buffer.unpack(Number),
       conn;
 
-  conn = this.connections.in[id];
+  conn = this.connections.in.get(id);
   if(id == -1 || !conn){
     conn = new Connection();
     conn.detach();
@@ -342,9 +335,8 @@ function* unpackerFn(buffer,ref){
 // Subconnection listeners
 
 function remove(e,d,packer,counters,conns,children,dir,id){
-  var result;
-  if(dir == IN) result = delete conns.out[id];
-  else result = delete conns.in[id];
+  if(dir == IN) conns.out.delete(id);
+  else conns.in.delete(id);
   counters.connections--;
   children.value--;
   packer.pack([dir,id]);
