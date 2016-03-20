@@ -91,6 +91,13 @@ function* handlePacker(packer,ch){
       ) return;
     }
 
+    if(
+      ch.readyState == 3 ||
+      ch.readyState == 'closed' ||
+      ch.readyState == 2 ||
+      ch.readyState == 'closing'
+    ) return;
+
     ch.send(ab);
   }
 
