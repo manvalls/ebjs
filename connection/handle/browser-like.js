@@ -14,6 +14,8 @@ module.exports = function(ch,connection,packer,unpacker,maxBytes){
 
       case 3:
       case 'closed':
+      case 2:
+      case 'closing':
         connection.detach();
         break;
 
@@ -58,9 +60,14 @@ function* removeListeners(ev,d,handleState,handleData,walker,ch){
   ch.removeEventListener('message',handleData,false);
 
   while(ch.bufferedAmount){
-    if(ch.readyState == 3 || ch.readyState == 'closed') break;
     yield tick();
     yield tick();
+    if(
+      ch.readyState == 3 ||
+      ch.readyState == 'closed' ||
+      ch.readyState == 2 ||
+      ch.readyState == 'closing'
+    ) break;
   }
 
   walker.pause();
@@ -75,8 +82,13 @@ function* handlePacker(packer,ch){
     ab = getAB(yield packer.read(buffer));
 
     while(ch.bufferedAmount){
-      if(ch.readyState == 3 || ch.readyState == 'closed') return;
       yield tick();
+      if(
+        ch.readyState == 3 ||
+        ch.readyState == 'closed' ||
+        ch.readyState == 2 ||
+        ch.readyState == 'closing'
+      ) return;
     }
 
     ch.send(ab);
