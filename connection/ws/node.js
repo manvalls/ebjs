@@ -34,6 +34,9 @@ module.exports = function(location,constraints){
   constraints = constraints || {};
   ld = link(new Connection(),{constraints,ebjs: constraints.ebjs});
   handle(drv,ld.connection,ld.packer,ld.unpacker,constraints.bytes);
+
+  socket[connection] = ld.connection;
+  socket.once('close',detachIt);
   return ld.connection;
 };
 
@@ -45,4 +48,8 @@ function start(){
 
 function close(){
   this[connection].end();
+}
+
+function detachIt(){
+  this[connection].detach();
 }

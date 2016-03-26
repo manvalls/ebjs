@@ -43,6 +43,8 @@ module.exports = function(srv,options){
 
     ld = link(new Connection(),{constraints,ebjs: options.ebjs});
     handle(driver,ld.connection,ld.packer,ld.unpacker,constraints.bytes);
+    socket[connection] = ld.connection;
+    socket.once('close',detachIt);
 
     driver.start();
     connectionServer[emitter].give('connection',ld.connection);
@@ -71,4 +73,8 @@ class ConnectionServer extends Target{
 
 function close(){
   this[connection].end();
+}
+
+function detachIt(){
+  this[connection].detach();
 }
