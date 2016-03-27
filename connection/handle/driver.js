@@ -1,5 +1,6 @@
 var walk = require('y-walk'),
     walker = Symbol(),
+    interval = Symbol(),
     unpacker = Symbol(),
     connection = Symbol(),
     maxBytes = Symbol(),
@@ -33,6 +34,7 @@ function handleState(){
 
     case 1:
       this[walker].resume();
+      this[interval] = setInterval(ping,25e3,this);
       break;
 
     case 3:
@@ -57,6 +59,7 @@ function removeListeners(ev,d,driver){
   driver.removeListener('error',handleState);
   driver.removeListener('close',handleState);
   driver.removeListener('message',handleData);
+  clearInterval(driver[interval]);
   driver[walker].pause();
   driver.close();
 }
@@ -69,6 +72,10 @@ function* handlePacker(packer,driver){
     if(!driver.binary(buffer)) driver.text(buffer.toString('binary'));
   }
 
+}
+
+function ping(driver){
+  driver.ping();
 }
 
 // Utils
