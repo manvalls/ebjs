@@ -33,7 +33,7 @@ function* unpacker(buffer,ref){
   if(fn & 8)  flags += 'y';
   if(fn & 16) flags += 'u';
 
-  re = new RegExp(yield buffer.unpack(labels.String),flags);
+  re = new RegExp((yield buffer.unpack(labels.String)),flags);
   re.lastIndex = yield buffer.unpack(labels.Number);
 
   return re;
