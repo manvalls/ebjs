@@ -60,7 +60,7 @@ function* unpacker(buffer,ref,ack){
 
   if(yield buffer.unpack(labels.Boolean)){
     if(yield buffer.unpack(labels.Boolean)) res.accept(yield buffer.unpack());
-    else res.reject(yield buffer.unpack(),true);
+    else res.reject((yield buffer.unpack()),true);
   }else{
     conn = yield buffer.unpack(labels.Connection);
     try{
