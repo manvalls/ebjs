@@ -3,7 +3,8 @@ var t = require('u-test'),
     walk = require('y-walk'),
     Resolver = require('y-resolver'),
     label = require('../../label.js'),
-    labels = require('../../definitions/labels.js');
+    labels = require('../../definitions/labels.js'),
+    sample = require('./lipsum.js');
 
 function read(blob){
   var fr = new FileReader(),
@@ -77,13 +78,13 @@ module.exports = function(ebjs){
   });
 
   if(global.File) t('File',function*(){
-    var file = new File(['foo bar'],'filename',{type: 'type',lastModified: 42}),
+    var file = new File([sample],'filename',{type: 'type',lastModified: 42}),
         result = yield transform(file);
 
     assert.strictEqual(result.type,'type');
     assert.strictEqual(result.name,'filename');
     assert.strictEqual(result.lastModified,42);
-    assert.strictEqual(yield read(result),'foo bar');
+    assert.strictEqual(yield read(result),sample);
 
     file = new File([],'filename',{type: 'type',lastModified: 74});
     if(file.close) file.close();
