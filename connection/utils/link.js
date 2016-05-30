@@ -98,8 +98,7 @@ function* processTopUnpacker(topUnpacker,agent){
 }
 
 function* processTopPacker(topPacker,packer){
-  var buff = new Uint8Array(1e3);
-  while(true) yield packer.pack([yield topPacker.read(buff)]);
+  while(true) yield packer.pack([yield topPacker.read(1e3)]);
 }
 
 function onMessage(message,d,packer){
@@ -129,26 +128,24 @@ function* tryToForward(e,d,ubb,collection,unpacker,agent,args){
 }
 
 function* forwardToParent(parent,bb){
-  var buffer = new Uint8Array(1e3);
 
   bb.autoFlush = true;
   while(true) yield parent.packer.pack([
     parent.dir,
     parent.id,
-    yield bb.read(buffer)
+    yield bb.read(1e3)
   ]);
 
 }
 
 function* forwardToExt(ext,bb){
-  var buffer = new Uint8Array(1e3),
-      yd;
+  var yd;
 
   bb.autoFlush = true;
   while(true){
 
     yd = ext.write(
-      yield bb.read(buffer)
+      yield bb.read(1e3)
     );
 
     ext.flush();
@@ -343,6 +340,5 @@ function remove(e,d,packer,counters,conns,children,dir,id){
 }
 
 function* processSubPacker(packer,subpacker,dir,id){
-  var buff = new Uint8Array(1e3);
-  while(true) yield packer.pack([dir,id,yield subpacker.read(buff)]);
+  while(true) yield packer.pack([dir,id,yield subpacker.read(1e3)]);
 }

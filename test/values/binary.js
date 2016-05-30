@@ -4,7 +4,7 @@ var t = require('u-test'),
     Resolver = require('y-resolver'),
     label = require('../../label.js'),
     labels = require('../../definitions/labels.js'),
-    sample = require('./lipsum.js');
+    sample = require('../lipsum.js');
 
 function read(blob){
   var fr = new FileReader(),

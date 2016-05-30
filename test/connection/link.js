@@ -1,7 +1,8 @@
 var utils = require('./utils.js'),
     Connection = require('../../connection.js'),
     t = require('u-test'),
-    assert = require('assert');
+    assert = require('assert'),
+    sample = require('../lipsum.js');
 
 // Factories
 
@@ -16,8 +17,8 @@ function sendTest(getConns){
     c2.open();
 
     msg = c2.until('message');
-    c1.send('foo');
-    assert.strictEqual(yield msg,'foo');
+    c1.send(sample);
+    assert.strictEqual(yield msg,sample);
 
     msg = c1.until('message');
     c2.send({foo: 'bar'});
