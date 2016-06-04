@@ -7,6 +7,6 @@ module.exports = function(stream,constraints){
 
   constraints = constraints || {};
   ld = link(new Connection(),{constraints,ebjs: constraints.ebjs});
-  handle(stream,ld.connection,ld.packer,ld.unpacker,constraints.bytes);
+  handle(stream,ld.connection,ld.packer,ld.unpacker,constraints.bytes,constraints.chunkSize);
   return ld.connection;
 };

@@ -22,10 +22,10 @@ function* packer(buffer,data){
 
     yield buffer.write(yield read(
       data,data.size - remaining,
-      Math.min(data.size,data.size - remaining + 1e3)
+      Math.min(data.size,data.size - remaining + 10e3)
     ));
 
-    remaining -= 1e3;
+    remaining -= 10e3;
   }
 
 }

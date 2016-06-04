@@ -21,7 +21,8 @@ module.exports = function(srv,options){
 
   constraints = {
     bytes: options.bytes,
-    connections: options.connections
+    connections: options.connections,
+    chunkSize: options.chunkSize
   };
 
   function onUpgrade(request,socket,body){
@@ -32,7 +33,7 @@ module.exports = function(srv,options){
     if(url && request.url != url) return;
 
     driver = websocket.http(request,{
-      maxLength: 2e3,
+      maxLength: constraints.chunkSize + 1e3,
       protocols: ['ebjs-connection']
     });
 
@@ -42,7 +43,7 @@ module.exports = function(srv,options){
     socket.pipe(driver.io).pipe(socket);
 
     ld = link(new Connection(),{constraints,ebjs: options.ebjs});
-    handle(driver,ld.connection,ld.packer,ld.unpacker,constraints.bytes);
+    handle(driver,ld.connection,ld.packer,ld.unpacker,constraints.bytes,constraints.chunkSize);
     socket[connection] = ld.connection;
     socket.once('close',detachIt);
 

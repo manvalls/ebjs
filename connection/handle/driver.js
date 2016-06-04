@@ -6,7 +6,7 @@ var walk = require('y-walk'),
     maxBytes = Symbol(),
     sync = [ 101, 98, 106, 115, 47, 99, 111, 110, 110, 101, 99, 116, 105, 111, 110 ];
 
-module.exports = function(driver,c,packer,up,mb){
+module.exports = function(driver,c,packer,up,mb,cs){
   driver[connection] = c;
   driver[unpacker] = up;
   driver[maxBytes] = mb;
@@ -19,7 +19,7 @@ module.exports = function(driver,c,packer,up,mb){
   driver.on('close',handleState);
   driver.on('message',handleData);
 
-  driver[walker] = walk(handlePacker,[packer,driver]);
+  driver[walker] = walk(handlePacker,[packer,driver,cs]);
   driver[walker].pause();
 
   c.once('detached',removeListeners,driver);
@@ -64,11 +64,11 @@ function removeListeners(ev,d,driver){
   driver.close();
 }
 
-function* handlePacker(packer,driver){
+function* handlePacker(packer,driver,chunkSize){
   var buffer;
 
   while(true){
-    buffer = yield packer.read(new Buffer(1e3));
+    buffer = yield packer.read(chunkSize,Buffer);
     if(!driver.binary(buffer)) driver.text(buffer.toString('binary'));
   }
 

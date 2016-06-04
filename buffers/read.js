@@ -19,8 +19,8 @@ class ReadBuffer{
     this[refc] = -1;
   }
 
-  read(array){
-    return this[bb].read(array);
+  read(){
+    return this[bb].read(...arguments);
   }
 
   unpack(label){

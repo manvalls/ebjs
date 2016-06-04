@@ -98,7 +98,7 @@ function* onMessage(message,d,pc,agent,conn,col,ctx){
 function handleDC(dc,agent,relay,conn,ebjs,fwd,ctx,col){
   var ld = link(new Connection(),{conn,ebjs: ebjs});
 
-  handle(dc,ld.connection,ld.packer,ld.unpacker,conn.bytes);
+  handle(dc,ld.connection,ld.packer,ld.unpacker,conn.bytes,conn.chunkSize);
   ctx.connection = ld.connection;
   ld.connection.open();
   ld.connection.once('detached',detachIt,conn);

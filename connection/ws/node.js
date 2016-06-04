@@ -18,9 +18,12 @@ module.exports = function(location,constraints){
   if(u.protocol == 'wss:') prv = tls;
   else prv = net;
 
+  constraints = constraints || {};
+  ld = link(new Connection(),{constraints,ebjs: constraints.ebjs});
+
   socket = prv.connect(parseInt(u.port),u.hostname);
   drv = websocket.client(location,{
-    maxLength: 2e3,
+    maxLength: constraints.chunkSize + 1e3,
     protocols: ['ebjs-connection']
   });
 
@@ -30,10 +33,7 @@ module.exports = function(location,constraints){
   socket.on('connect',start);
   drv.once('close',close);
   socket.pipe(drv.io).pipe(socket);
-
-  constraints = constraints || {};
-  ld = link(new Connection(),{constraints,ebjs: constraints.ebjs});
-  handle(drv,ld.connection,ld.packer,ld.unpacker,constraints.bytes);
+  handle(drv,ld.connection,ld.packer,ld.unpacker,constraints.bytes,constraints.chunkSize);
 
   socket[connection] = ld.connection;
   socket.once('close',detachIt);

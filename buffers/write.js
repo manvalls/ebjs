@@ -19,8 +19,8 @@ class WriteBuffer{
     this[refc] = -1;
   }
 
-  write(array){
-    return this[bb].write(array);
+  write(){
+    return this[bb].write(...arguments);
   }
 
   pack(data,label){

@@ -5,7 +5,7 @@ var walk = require('y-walk'),
     maxBytes = Symbol(),
     sync = [ 101, 98, 106, 115, 47, 99, 111, 110, 110, 101, 99, 116, 105, 111, 110 ];
 
-module.exports = function(stream,c,packer,up,mb){
+module.exports = function(stream,c,packer,up,mb,cs){
   var readable,writable,walker;
 
   packer.sync(sync);
@@ -23,7 +23,7 @@ module.exports = function(stream,c,packer,up,mb){
   writable[connection] = c;
   readable[connection] = c;
   readable[maxBytes] = mb;
-  walker = walk(handlePacker,[packer,writable]);
+  walker = walk(handlePacker,[packer,writable,cs]);
 
   readable.on('data',onData);
   readable.once('error',onceClosed);
@@ -50,11 +50,11 @@ function onceDetached(e,d,readable,writable,walker){
   walker.pause();
 }
 
-function* handlePacker(packer,writable){
+function* handlePacker(packer,writable,chunkSize){
   var buffer,cb;
 
   while(true){
-    buffer = yield packer.read(new Buffer(1e3));
+    buffer = yield packer.read(chunkSize,Buffer);
     writable.write(buffer,cb = Cb());
     yield cb;
   }

@@ -8,6 +8,7 @@ module.exports = function(url,constraints){
 
   constraints = constraints || {};
   ld = link(new Connection(),{constraints,ebjs: constraints.ebjs});
-  handle(ws,ld.connection,ld.packer,ld.unpacker,constraints.bytes);
+  console.log('--->',constraints.chunkSize);
+  handle(ws,ld.connection,ld.packer,ld.unpacker,constraints.bytes,constraints.chunkSize);
   return ld.connection;
 };

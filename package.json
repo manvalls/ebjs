@@ -4,19 +4,19 @@
   "description": "Extensible Binary JavaScript Serialization",
   "main": "main.js",
   "dependencies": {
-    "binary-buffer": "^5.1.2",
-    "detacher": "^2.0.3",
+    "binary-buffer": "^5.2.2",
+    "detacher": "^2.0.4",
     "input-diff": "^1.0.1",
     "ortc-adapter": "^0.1.6",
-    "u-proto": "^6.4.4",
-    "websocket-driver": "^0.6.4",
+    "u-proto": "^6.5.1",
+    "websocket-driver": "^0.6.5",
     "y-callback": "^1.2.3",
     "y-emitter": "^12.4.2",
-    "y-lock": "^3.1.0",
-    "y-resolver": "^9.2.1",
-    "y-setter": "^6.5.1",
+    "y-lock": "^3.1.2",
+    "y-resolver": "^9.2.2",
+    "y-setter": "^6.5.3",
     "y-timers": "^1.1.2",
-    "y-walk": "^10.0.5"
+    "y-walk": "^10.0.6"
   },
   "devDependencies": {
     "u-test": "^3.7.3"

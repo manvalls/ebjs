@@ -2,7 +2,7 @@ var tick = require('y-timers/tick'),
     walk = require('y-walk'),
     sync = [ 101, 98, 106, 115, 47, 99, 111, 110, 110, 101, 99, 116, 105, 111, 110 ];
 
-module.exports = function(ch,connection,packer,unpacker,maxBytes){
+module.exports = function(ch,connection,packer,unpacker,maxBytes,chunkSize){
   var walker;
 
   packer.sync(sync);
@@ -44,7 +44,7 @@ module.exports = function(ch,connection,packer,unpacker,maxBytes){
   ch.addEventListener('error',handleState,false);
   ch.addEventListener('message',handleData,false);
 
-  walker = walk(handlePacker,[packer,ch]);
+  walker = walk(handlePacker,[packer,ch,chunkSize]);
   walker.pause();
 
   connection.once('detached',removeListeners,handleState,handleData,walker,ch);
@@ -74,12 +74,11 @@ function* removeListeners(ev,d,handleState,handleData,walker,ch){
   ch.close();
 }
 
-function* handlePacker(packer,ch){
+function* handlePacker(packer,ch,chunkSize){
   var buffer,ab;
 
   while(true){
-    buffer = new Uint8Array(1e3);
-    ab = getAB(yield packer.read(buffer));
+    ab = getAB(yield packer.read(chunkSize,Uint8Array));
 
     while(ch.bufferedAmount){
       yield tick();

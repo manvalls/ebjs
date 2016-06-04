@@ -37,6 +37,12 @@ function linkConn(conn,opt){
   obj.constraints = opt.constraints || {};
   obj.counters.connections = obj.counters.connections || 0;
 
+  if(obj.constraints.bytes) obj.constraints.chunkSize = Math.min(
+    obj.constraints.chunkSize || Infinity,
+    obj.constraints.bytes
+  );
+
+  obj.constraints.chunkSize = obj.constraints.chunkSize || 15e3;
   obj.connections = {
     in: new Map(),
     out: new Map()
@@ -77,10 +83,10 @@ function linkConn(conn,opt){
   obj.collection.add(
     obj.agent.on('message',onMessage,packer),
     obj.agent.once('detached',onceDetached,obj.collection,obj.connections.in,obj.connections.out),
-    conn.once('open',tryToForward,ubb,obj.collection,obj.unpacker,obj.agent,args),
-    conn.once('locked',tryToForward,ubb,obj.collection,obj.unpacker,obj.agent,args),
+    conn.once('open',tryToForward,ubb,obj.collection,obj.unpacker,obj.agent,args,obj.constraints),
+    conn.once('locked',tryToForward,ubb,obj.collection,obj.unpacker,obj.agent,args,obj.constraints),
     walk(processTopUnpacker,[unpacker,obj.agent]),
-    walk(processTopPacker,[packer,obj.packer])
+    walk(processTopPacker,[packer,obj.packer,obj.constraints])
   );
 
   return {
@@ -97,8 +103,8 @@ function* processTopUnpacker(topUnpacker,agent){
   while(true) agent.send(yield topUnpacker.unpack());
 }
 
-function* processTopPacker(topPacker,packer){
-  while(true) yield packer.pack([yield topPacker.read(1e3)]);
+function* processTopPacker(topPacker,packer,constraints){
+  while(true) yield packer.pack([yield topPacker.read(constraints.chunkSize,Uint8Array)]);
 }
 
 function onMessage(message,d,packer){
@@ -113,13 +119,13 @@ function onceDetached(ev,d,collection,inConns,outConns){
   for(conn of outConns.values()) conn.connection.detach();
 }
 
-function* tryToForward(e,d,ubb,collection,unpacker,agent,args){
+function* tryToForward(e,d,ubb,collection,unpacker,agent,args,constraints){
 
   if(this[parentTransfer]) collection.add(
-    walk(forwardToParent,[this[parentTransfer],ubb])
+    walk(forwardToParent,[this[parentTransfer],ubb,constraints])
   );
   else if(this[extTransfer]) collection.add(
-    walk(forwardToExt,[this[extTransfer],ubb])
+    walk(forwardToExt,[this[extTransfer],ubb,constraints])
   );
   else collection.add(
     walk(processUnpacker,args)
@@ -127,25 +133,25 @@ function* tryToForward(e,d,ubb,collection,unpacker,agent,args){
 
 }
 
-function* forwardToParent(parent,bb){
+function* forwardToParent(parent,bb,constraints){
 
   bb.autoFlush = true;
   while(true) yield parent.packer.pack([
     parent.dir,
     parent.id,
-    yield bb.read(1e3)
+    yield bb.read(constraints.chunkSize,Uint8Array)
   ]);
 
 }
 
-function* forwardToExt(ext,bb){
+function* forwardToExt(ext,bb,constraints){
   var yd;
 
   bb.autoFlush = true;
   while(true){
 
     yd = ext.write(
-      yield bb.read(1e3)
+      yield bb.read(constraints.chunkSize,Uint8Array)
     );
 
     ext.flush();
@@ -176,8 +182,11 @@ function* processUnpacker(  unpacker,
 
         if(data[0] instanceof Uint8Array){
 
-          topUnpacker.write(data[0]);
-          if(constraints.bytes && topUnpacker.bytesSinceFlushed > constraints.bytes) agent.detach();
+          if(data[0].length > constraints.bytes) agent.detach();
+          else{
+            topUnpacker.write(data[0]);
+            if(constraints.bytes && topUnpacker.bytesSinceFlushed > constraints.bytes) agent.detach();
+          }
 
         // Subconnection init
 
@@ -301,7 +310,7 @@ function* packerFn(buffer,data){
   data.end.transfer(parentTransfer,data.end[parentData]);
   data.once('detached',remove,this.packer,this.counters,this.connections,this.children,IN,id);
   conn.collection.add(
-    walk(processSubPacker,[this.packer,conn.packer,IN,id])
+    walk(processSubPacker,[this.packer,conn.packer,IN,id,this.constraints])
   );
 
   this.children.value++;
@@ -323,7 +332,7 @@ function* unpackerFn(buffer,ref){
   }
 
   conn.collection.add(
-    walk(processSubPacker,[this.packer,conn.packer,OUT,id])
+    walk(processSubPacker,[this.packer,conn.packer,OUT,id,this.constraints])
   );
 
   return conn.connection;
@@ -339,6 +348,6 @@ function remove(e,d,packer,counters,conns,children,dir,id){
   packer.pack([dir,id]);
 }
 
-function* processSubPacker(packer,subpacker,dir,id){
-  while(true) yield packer.pack([dir,id,yield subpacker.read(1e3)]);
+function* processSubPacker(packer,subpacker,dir,id,constraints){
+  while(true) yield packer.pack([dir,id,yield subpacker.read(constraints.chunkSize,Uint8Array)]);
 }
