@@ -1,93 +1,133 @@
-var Detacher = require('detacher'),
-    label = require('../../label.js'),
-    labels = require('../labels.js'),
+var labels = require('../labels.js'),
     utils = require('./utils.js'),
     Connection = require('../../connection.js'),
     RTCConnection = require('../../connection/rtc.js'),
+    walk = require('y-walk'),
 
-    handle = require('../../connection/handle/browser-like.js'),
+    handlePacker = require('../../connection/handle/browser-like/packer.js'),
+    handleUnpacker = require('../../connection/handle/browser-like/unpacker.js'),
     link = require('../../connection/utils/link.js'),
 
     HANDOVER_START = 0,
     HANDOVER_END = 1,
     MESSAGE = 2;
 
+// Packer
+
 function* packer(buffer,data){
   var relay = new Connection(),
-      agent = data.lock(),
-      col = new Detacher(),
-      ctx = {queue: []},
+      ld = link(data.end,{constraints: data,ebjs: this}),
       pc,fwd;
 
   yield buffer.pack(relay.end,labels.Connection);
   yield buffer.pack(data.bytes,labels.Number);
   yield buffer.pack(data.connections,labels.Number);
+  yield buffer.pack(data.chunkSize,labels.Number);
   yield buffer.pack(data.rtcConfig);
 
-  if(utils.RTCPeerConnection){
+  if(utils.RTCPeerConnection) try{
     pc = new utils.RTCPeerConnection(data.rtcConfig || {iceServers: utils.iceServers});
     if(typeof pc.createDataChannel != 'function') pc = null;
-  }
+  }catch(e){}
 
   relay.open();
   relay.once('detached',detachIt,data);
-  relay.on('message',onMessage,pc,agent,data,col,ctx);
   data.once('detached',detachIt,relay);
-  fwd = agent.on('message',forwardIt,relay);
+
+  relay.forwarding = true;
+  relay.waiting = false;
+  fwd = walk(forwardIt,[ld.packer,relay,data.chunkSize]);
+  relay.on('message',onMessage,pc,ld,data);
 
   if(pc){
-    handleDC(pc.createDataChannel(''),agent,relay,data,this,fwd,ctx,col);
+    handleDC(pc.createDataChannel(''),relay,fwd,ld);
     utils.sendCandidates(pc,relay);
     utils.sendOffer(pc,relay);
   }
+
 }
+
+// Unpacker
 
 function* unpacker(buffer,ref){
   var relay = yield buffer.unpack(labels.Connection),
       data = new RTCConnection({
         bytes: yield buffer.unpack(labels.Number),
         connections: yield buffer.unpack(labels.Number),
+        chunkSize: yield buffer.unpack(labels.Number),
         rtcConfig: yield buffer.unpack()
       }),
-      agent = data.end.lock(),
-      col = new Detacher(),
-      ctx = {queue: []},
+      ld = link(data,{constraints: data,ebjs: this}),
       pc,fwd;
 
-  if(utils.RTCPeerConnection){
+  if(utils.RTCPeerConnection) try{
     pc = new utils.RTCPeerConnection(data.rtcConfig || {iceServers: utils.iceServers});
     if(typeof pc.createDataChannel != 'function') pc = null;
-  }
+  }catch(e){}
 
   relay.open();
   relay.once('detached',detachIt,data);
-  relay.on('message',onMessage,pc,agent,data,col,ctx);
   data.once('detached',detachIt,relay);
-  fwd = agent.on('message',forwardIt,relay);
+
+  relay.forwarding = true;
+  relay.waiting = false;
+  fwd = walk(forwardIt,[ld.packer,relay,data.chunkSize]);
+  relay.on('message',onMessage,pc,ld,data);
 
   if(pc){
     utils.sendCandidates(pc,relay);
     pc.ondatachannel = e => {
       pc.ondatachannel = null;
-      handleDC(e.channel,agent,relay,data,this,fwd,ctx,col);
+      handleDC(e.channel,relay,fwd,ld);
     };
   }
 
   return data;
 }
 
-function* onMessage(message,d,pc,agent,conn,col,ctx){
+// handlers
+
+function handleDC(dc,relay,fwd,ld){
+
+  function signalOpen(){
+    relay.forwarding = false;
+    relay.dc = dc;
+    fwd.listen(startHandover,[relay]);
+  }
+
+  handleUnpacker(dc,ld.connection,ld.unpacker,ld.connection.bytes);
+  if(dc.readyState == 'open') signalOpen();
+  else dc.onopen = signalOpen;
+
+}
+
+function startHandover(relay,packer){
+  relay.waiting = true;
+  relay.send([HANDOVER_START]);
+}
+
+function detachIt(ev,d,conn){
+  conn.detach();
+}
+
+function* forwardIt(packer,relay,chunkSize){
+  while(relay.forwarding) relay.send([MESSAGE,yield packer.read(chunkSize)]);
+}
+
+function* onMessage(message,d,pc,ld,conn){
   var msg;
 
   if(message instanceof Array) switch(message[0]){
-    case MESSAGE: return agent.send(message[1]);
+    case MESSAGE:
+      if(!(message[1] instanceof Uint8Array)) return;
+      ld.unpacker.write(message[1]);
+      if(conn.bytes && ld.unpacker.bytesSinceFlushed > conn.bytes) conn.detach();
+      return;
     case HANDOVER_START: return this.send([HANDOVER_END]);
     case HANDOVER_END:
-      col.detach();
-      agent.on('message',sendIt,ctx.connection);
-      conn.once('detached',detachIt,ctx.connection);
-      ctx.connection.once('detached',detachIt,conn);
-      while(msg = ctx.queue.shift()) ctx.connection.send(msg);
+      if(!this.waiting) return;
+      this.waiting = false;
+      handlePacker(this.dc,ld.connection,ld.packer,conn.chunkSize);
       return;
   }
 
@@ -95,40 +135,7 @@ function* onMessage(message,d,pc,agent,conn,col,ctx){
   utils.handleMessage(pc,message,this);
 }
 
-function handleDC(dc,agent,relay,conn,ebjs,fwd,ctx,col){
-  var ld = link(new Connection(),{conn,ebjs: ebjs});
-
-  handle(dc,ld.connection,ld.packer,ld.unpacker,conn.bytes,conn.chunkSize);
-  ctx.connection = ld.connection;
-  ld.connection.open();
-  ld.connection.once('detached',detachIt,conn);
-  ld.connection.on('message',sendIt,agent);
-
-  function signalOpen(){
-    fwd.detach();
-    col.add(agent.on('message',queueIt,ctx.queue));
-    relay.send([HANDOVER_START]);
-  }
-
-  if(dc.readyState == 'open') signalOpen();
-  else dc.onopen = signalOpen;
-}
-
-function detachIt(ev,d,conn){
-  conn.detach();
-}
-
-function sendIt(msg,d,conn){
-  conn.send(msg);
-}
-
-function queueIt(msg,d,queue){
-  queue.push(msg);
-}
-
-function forwardIt(msg,d,relay){
-  relay.send([MESSAGE,msg]);
-}
+/*/ exports /*/
 
 module.exports = function(ebjs){
   ebjs.setPacker(labels.RTCConnection,packer,ebjs);
