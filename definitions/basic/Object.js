@@ -2,9 +2,25 @@ var label = require('../../label.js'),
     labels = require('../labels.js');
 
 Object.defineProperty(Object.prototype,label,{
-  value: labels.Object,
-  writable: true,
+
+  get: function(){
+    if(typeof this.then == 'function') return labels.Promise;
+    return labels.Object;
+  },
+
+  set: function(value){
+
+    Object.defineProperty(this,label,{
+      value: value,
+      configurable: true,
+      writable: true,
+      enumerable: true
+    });
+
+  },
+
   configurable: true
+
 });
 
 function* packer(buffer,data){

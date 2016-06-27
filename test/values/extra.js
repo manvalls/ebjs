@@ -1,5 +1,6 @@
 var t = require('u-test'),
     assert = require('assert'),
+    BB = require('bluebird'),
     label = require('../../label.js'),
     labels = require('../../definitions/labels.js'),
     utils = require('../connection/utils.js');
@@ -63,6 +64,10 @@ module.exports = function(ebjs){
     catch(e){ error = e; }
     assert(error);
     assert.strictEqual(error.message,'asd');
+
+    pair[1].send(BB.resolve('foo'));
+    assert.strictEqual(yield (yield pair[0].until('message')),'foo');
+
   });
 
 };
