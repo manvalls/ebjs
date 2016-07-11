@@ -28,6 +28,8 @@ module.exports = function(stream,c,packer,up,mb,cs){
   readable.on('data',onData);
   readable.once('error',onceClosed);
   readable.once('end',onceClosed);
+  readable.once('close',onceClosed);
+  writable.once('close',onceClosed);
   writable.once('error',onceClosed);
   c.once('detached',onceDetached,readable,writable,walker);
 };
@@ -45,6 +47,8 @@ function onceDetached(e,d,readable,writable,walker){
   readable.removeListener('data',onData);
   readable.removeListener('error',onceClosed);
   readable.removeListener('end',onceClosed);
+  readable.removeListener('close',onceClosed);
+  writable.removeListener('close',onceClosed);
   writable.removeListener('error',onceClosed);
   writable.end();
   walker.pause();
