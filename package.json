@@ -1,6 +1,6 @@
 {
   "name": "ebjs",
-  "version": "6.19.2",
+  "version": "6.20.0",
   "description": "Extensible Binary JavaScript Serialization",
   "main": "main.js",
   "dependencies": {
