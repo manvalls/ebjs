@@ -8,3 +8,4 @@ require('./definitions/extra.js')(ebjs);
 require('./definitions/binary.js')(ebjs);
 require('./definitions/rtc.js')(ebjs);
 require('./definitions/y.js')(ebjs);
+require('./definitions/collections.js')(ebjs);

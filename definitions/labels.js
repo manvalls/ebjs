@@ -84,3 +84,16 @@ l.Lock =                      60;
 /** RESERVED **/              68;
 /** RESERVED **/              69;
 /** RESERVED **/              70;
+
+/*/--- Collections ---/*/
+
+l.Set =                       71;
+l.Map =                       72;
+/** RESERVED **/              73;
+/** RESERVED **/              74;
+/** RESERVED **/              75;
+/** RESERVED **/              76;
+/** RESERVED **/              77;
+/** RESERVED **/              78;
+/** RESERVED **/              79;
+/** RESERVED **/              80;

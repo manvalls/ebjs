@@ -15,6 +15,7 @@ t(desc,function(){
   require('./binary.js')(ebjs);
   require('./rtc.js')(ebjs);
   require('./y.js')(ebjs);
+  require('./collections.js')(ebjs);
 
   child = ebjs.getChild();
   child.setConstant(4e3,NaN);
