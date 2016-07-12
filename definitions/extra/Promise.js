@@ -1,6 +1,7 @@
 var Connection = require('../../connection.js'),
     label = require('../../label.js'),
     labels = require('../labels.js'),
+    children = require('../../connection/utils/children.js'),
 
     RESOLVE = 0,
     REJECT = 1;
@@ -20,16 +21,13 @@ function* packer(buffer,data){
   try{
     data.then(function(value){
       conn.send([RESOLVE,value]);
-      conn.detach();
     },function(error){
       conn.send([REJECT,error]);
-      conn.detach();
     });
   }catch(e){
     conn.send([REJECT,e]);
-    conn.detach();
   }
-  
+
 }
 
 function* unpacker(buffer,ref){
@@ -41,7 +39,7 @@ function* unpacker(buffer,ref){
   });
 }
 
-function onMessage(msg,d,resolve,reject){
+function* onMessage(msg,d,resolve,reject){
   if(!(msg instanceof Array)) return;
 
   switch(msg[0]){
@@ -49,12 +47,16 @@ function onMessage(msg,d,resolve,reject){
     case RESOLVE:
       resolve(msg[1]);
       d.detach();
+
+      if(this[children]) yield this[children].is(0);
       this.detach();
       break;
 
     case REJECT:
       reject(msg[1]);
       d.detach();
+      
+      if(this[children]) yield this[children].is(0);
       this.detach();
       break;
 
