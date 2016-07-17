@@ -56,6 +56,7 @@ function onSU(state,d,conn){
 }
 
 function* listener(ev,d,en,conn,detachers,events){
+  if(!conn.is('open')) return;
   if(this.is(en)){
     conn.send([STATE,en,ev]);
     if(this[emitter]) this[emitter].unset(en,true);

@@ -31,6 +31,8 @@ function* packer(buffer,data,ack){
 
 function listener(conn,ack){
 
+  if(!conn.is('open')) return;
+
   if(
     ack &&
     ack.done &&

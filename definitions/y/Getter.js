@@ -30,6 +30,8 @@ function* packer(buffer,data,ack){
 function watcher(value,oldValue,d,conn,ack){
   var i;
 
+  if(!conn.is('open')) return;
+
   if(ack && ack.array[0] === value){
     ack.array.shift();
     for(i = 0;i < ack.offset;i++) conn.send([ACK]);

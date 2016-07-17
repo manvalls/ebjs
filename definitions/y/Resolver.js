@@ -57,7 +57,7 @@ function* onceMessage(msg,d,res,ack){
 }
 
 function listener(conn,yd){
-  if(yd.done) return;
+  if(yd.done || !conn.is('open')) return;
   if(this.accepted) conn.send([ACCEPT,this.value]);
   else conn.send([REJECT,this.error]);
 }
