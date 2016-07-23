@@ -1,51 +1,48 @@
 var walk = require('y-walk'),
-    unpacker = Symbol(),
-    connection = Symbol(),
-    maxBytes = Symbol(),
     DATA = 0,
     DETACH = 1,
     sync = [ 101, 98, 106, 115, 47, 99, 111, 110, 110, 101, 99, 116, 105, 111, 110 ];
 
-module.exports = function(port,c,packer,up,mb,cs){
-  var walker;
+module.exports = function(port,c,packer,unpacker,maxBytes,cs){
+  var walker,pin,pout;
+
+  if(port.constructor == Object) ({in: pin, out: pout} = port);
+  else pin = pout = port;
 
   packer.sync(sync);
-  up.sync(sync).listen(detachIfNot,[c]);
+  unpacker.sync(sync).listen(detachIfNot,[c]);
 
-  port[unpacker] = up;
-  port[connection] = c;
-  port[maxBytes] = mb;
-  walker = walk(handlePacker,[packer,port,cs]);
+  function onMessage(e){
 
-  port.addEventListener('message',onMessage,false);
-  if(typeof port.start == 'function') port.start();
-  c.once('detached',onceDetached,port,walker);
-};
+    if(!(e.data instanceof Array)) return;
+    if(e.source && e.source != pout) return;
 
-function onMessage(e){
+    switch(e.data[0]){
 
-  if(!(e.data instanceof Array)) return;
+      case DATA:
+        if(!(e.data[1] instanceof ArrayBuffer)) return;
+        unpacker.write(new Uint8Array(e.data[1]));
+        if(maxBytes && unpacker.bytesSinceFlushed > maxBytes) c.detach();
+        break;
 
-  switch(e.data[0]){
+      case DETACH:
+        c.detach();
+        break;
 
-    case DATA:
-      if(!(e.data[1] instanceof ArrayBuffer)) return;
-      this[unpacker].write(new Uint8Array(e.data[1]));
-      if(this[maxBytes] && this[unpacker].bytesSinceFlushed > this[maxBytes]) this[connection].detach();
-      break;
-
-    case DETACH:
-      this[connection].detach();
-      break;
+    }
 
   }
 
-}
+  walker = walk(handlePacker,[packer,pout,cs]);
+  pin.addEventListener('message',onMessage,false);
+  if(typeof pin.start == 'function') pin.start();
+  c.once('detached',onceDetached,pin,pout,walker,onMessage);
+};
 
-function onceDetached(e,d,port,walker){
+function onceDetached(e,d,pin,pout,walker,onMessage){
   walker.pause();
-  port.removeEventListener('message',onMessage,false);
-  port.postMessage([DETACH]);
+  pin.removeEventListener('message',onMessage,false);
+  pout.postMessage([DETACH]);
 }
 
 function* handlePacker(packer,port,chunkSize){
