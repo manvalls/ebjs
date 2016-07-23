@@ -8,7 +8,8 @@ var Connection = require('../../connection.js'),
 
     VALUE = 0,
     DIFF = 1,
-    ACK = 2;
+    ACK = 2,
+    FREEZE = 3;
 
 function* packer(buffer,data,ack){
   var conn = new Connection(),
@@ -52,6 +53,9 @@ function detachIt(d){
 
 function* handleFreeze(data,conn){
   yield data.frozen();
+  if(!conn.is('open')) return;
+  conn.send([FREEZE]);
+
   if(conn[children]) yield conn[children].is(0);
   conn.detach();
 }
@@ -84,6 +88,10 @@ function onMessage(msg,d,setter,ack){
     case DIFF:
       try{ setter.value = diff.apply(setter.value,msg[1]); }
       catch(e){ }
+      break;
+
+    case FREEZE:
+      setter.freeze();
       break;
 
     case ACK:

@@ -1,6 +1,6 @@
 machine:
   node:
-    version: 6.3.0
+    version: 6.3.1
 dependencies:
   pre:
     - wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
