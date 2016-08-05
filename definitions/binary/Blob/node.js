@@ -1,4 +1,5 @@
-var labels = require('../../labels.js');
+var labels = require('../../labels.js'),
+    Buff = global.Buffer || global.Uint8Array;
 
 function* unpacker(buffer,ref){
   var type = yield buffer.unpack(labels.String),
@@ -6,14 +7,14 @@ function* unpacker(buffer,ref){
       length,buff,ret;
 
   if(isClosed){
-    ret = new Buffer(0);
+    ret = new Buff(0);
     ret.isClosed = true;
     ret.type = type;
     return ret;
   }
 
   length = yield buffer.unpack(labels.Number);
-  buff = new Buffer(length);
+  buff = new Buff(length);
   ret = yield buffer.read(buff);
   ret.type = type;
   return ret;
