@@ -22,10 +22,10 @@ function* packer(buffer,data){
 
     yield buffer.write(yield read(
       data,data.size - remaining,
-      Math.min(data.size,data.size - remaining + 10e3)
+      Math.min(data.size,data.size - remaining + 1e6)
     ));
 
-    remaining -= 10e3;
+    remaining -= 1e6;
   }
 
 }
@@ -44,8 +44,8 @@ function* unpacker(buffer,ref){
 
   remaining = yield buffer.unpack(labels.Number);
   while(remaining > 0){
-    ret = new Blob([ret,yield buffer.read(Math.min(remaining,1e3))],{type: type});
-    remaining -= 1e3;
+    ret = new Blob([ret,yield buffer.read(Math.min(remaining,1e6))],{type: type});
+    remaining -= 1e6;
   }
 
   return ret;

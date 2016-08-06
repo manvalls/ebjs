@@ -1,5 +1,5 @@
 
-module.exports = `
+var lipsum = module.exports = `
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis massa arcu, efficitur non tincidunt ac, pulvinar vitae odio. In hac habitasse platea dictumst. Vivamus eu mi vel arcu vehicula iaculis eu vitae mauris. Nulla iaculis augue nisl, efficitur pharetra eros ultrices quis. Vestibulum eu sollicitudin libero, id condimentum sapien. Praesent posuere enim bibendum odio dignissim, vitae faucibus dolor pretium. Fusce odio massa, rhoncus sed fringilla et, tempor eu mauris. Sed ultrices augue felis, in luctus massa dictum at. Donec sodales accumsan erat id vulputate.
 
 In non tincidunt sapien. Fusce ac maximus nunc, et egestas metus. Donec maximus bibendum nunc vitae aliquet. Cras magna risus, placerat sed leo nec, pharetra aliquam risus. Curabitur maximus ipsum vitae ante sodales, vitae tempus nisi suscipit. Nunc at ipsum sed dolor posuere aliquet. Donec viverra, est quis aliquet laoreet, tortor arcu facilisis arcu, vitae finibus lorem ante ut enim. Praesent enim felis, dapibus id dapibus eu, tempor non risus. Sed sed ultricies libero. Cras lacinia metus scelerisque mi imperdiet, quis dictum ligula consequat. Sed at ultrices nisl. Nullam interdum placerat eros, id egestas lacus efficitur et. Praesent non ipsum nec enim dignissim vehicula. Vivamus sagittis vehicula justo sed hendrerit. Sed turpis velit, imperdiet quis posuere non, pellentesque sit amet dolor. In sed consequat dolor.
@@ -48,3 +48,5 @@ Morbi a semper ligula. Aenean tempus in turpis quis maximus. In id metus tristiq
 
 冹妎 稘稒稕 奫嫮嫳 瞂 誙 嫆嫊 壿嫷嬃 炾笀耔 滭滹漇, 煻 虥諰諨 剆坲姏 軵逯, 鉾 駽髾髽 玝甿虮 鏎顜 嫆嫊 甀 紵脭脧 鍹餳駷, 蕷薎薍 笓粊紒 鶊鵱鶆 狅妵 彃 毰毲 鋑 蠝襭譸 裍裚詷, 緅 枲柊氠 褣諝趥 劁嘕 姎岵帔 濍燂犝 葞萴葂 蒛 窞綆, 钀钁 齞齝囃 訬軗郲 樧槧樈 蒏
 `;
+
+for(let i = 0;i < 100;i++) module.exports += lipsum;
