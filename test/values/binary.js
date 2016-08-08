@@ -1,9 +1,11 @@
 var t = require('u-test'),
     assert = require('assert'),
     walk = require('y-walk'),
+    RBlob = require('rblob'),
     Resolver = require('y-resolver'),
     label = require('../../label.js'),
     labels = require('../../definitions/labels.js'),
+    utils = require('../connection/utils.js'),
     sample = require('../lipsum.js');
 
 function read(blob){
@@ -146,6 +148,18 @@ module.exports = function(ebjs){
     assert.strictEqual(result.length,2);
     assert.strictEqual(result[0].toString(),'foo');
     assert.strictEqual(result[1].toString(),'bar');
+  });
+
+  if(global.Blob) t('RBlob',function*(){
+    var [c0,c1] = yield utils.getPair(),
+        b = new RBlob(new Blob([new Uint8Array([1,2,3])]));
+
+    c0.open();
+    c1.open();
+
+    c0.send(b);
+    b = yield c1.until('message');
+    assert.deepEqual(yield b.read(),[1,2,3]);
   });
 
 };

@@ -42,7 +42,7 @@ l.Buffer =                    31;
 l.Blob =                      32;
 l.File =                      33;
 l.FileList =                  34;
-/** RESERVED **/              35;
+l.RBlob =                     35;
 /** RESERVED **/              36;
 /** RESERVED **/              37;
 /** RESERVED **/              38;

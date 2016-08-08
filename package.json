@@ -8,6 +8,7 @@
     "detacher": "^2.0.4",
     "input-diff": "^1.0.1",
     "ortc-adapter": "^0.1.6",
+    "rblob": "^1.0.2",
     "u-proto": "^6.5.1",
     "websocket-driver": "^0.6.5",
     "y-callback": "^1.2.3",
