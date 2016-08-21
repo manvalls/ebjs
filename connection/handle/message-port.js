@@ -42,7 +42,8 @@ module.exports = function(port,c,packer,unpacker,maxBytes,cs){
 function onceDetached(e,d,pin,pout,walker,onMessage){
   walker.pause();
   pin.removeEventListener('message',onMessage,false);
-  pout.postMessage([DETACH]);
+  if(pout.postMessage.length == 2) pout.postMessage([DETACH],'*');
+  else pout.postMessage([DETACH]);
 }
 
 function* handlePacker(packer,port,chunkSize){
@@ -50,7 +51,8 @@ function* handlePacker(packer,port,chunkSize){
 
   while(true){
     buffer = yield packer.read(chunkSize,Uint8Array);
-    port.postMessage([DATA,buffer.buffer]/*,[buffer.buffer]*/);
+    if(port.postMessage.length == 2) port.postMessage([DATA,buffer.buffer],'*',[buffer.buffer]);
+    else port.postMessage([DATA,buffer.buffer]/*,[buffer.buffer]*/);
   }
 
 }
