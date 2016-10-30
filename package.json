@@ -5,23 +5,23 @@
   "main": "main.js",
   "dependencies": {
     "binary-buffer": "^5.2.2",
-    "detacher": "^2.0.4",
+    "detacher": "^2.0.5",
     "input-diff": "^1.0.1",
     "ortc-adapter": "^0.1.6",
-    "rblob": "^1.0.2",
-    "u-proto": "^6.5.1",
+    "rblob": "^1.0.3",
+    "u-proto": "^7.0.2",
     "websocket-driver": "^0.6.5",
     "y-callback": "^1.2.3",
-    "y-emitter": "^12.4.2",
+    "y-emitter": "^12.4.3",
     "y-lock": "^3.1.2",
-    "y-resolver": "^9.2.2",
-    "y-setter": "^6.5.3",
-    "y-timers": "^1.1.2",
+    "y-resolver": "^9.4.1",
+    "y-setter": "^6.12.2",
+    "y-timers": "^1.1.5",
     "y-walk": "^10.0.6"
   },
   "devDependencies": {
-    "bluebird": "^3.4.1",
-    "u-test": "^3.7.5"
+    "bluebird": "^3.4.6",
+    "u-test": "^3.8.8"
   },
   "scripts": {
     "test": "e= u-test"
