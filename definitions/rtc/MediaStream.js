@@ -58,7 +58,10 @@ function* unpacker(buffer,ref){
 
     st = yield res.yielded;
     if(config) st.rtcConfig = config;
-    conn.detach();
+    st.addEventListener('ended',function(e){
+      conn.detach();
+    });
+
     return st;
   }catch(e){ return new utils.MediaStream(); }
 }
