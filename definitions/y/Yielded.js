@@ -68,7 +68,10 @@ function* unpacker(buffer,ref,ack){
     try{
       conn.open();
       conn.once('message',onceMessage,res,ack);
-    }catch(e){}
+      conn.until('detached').listen(res.reject,[],res);
+    }catch(e){
+      res.reject(e);
+    }
   }
 
   return res.yielded;

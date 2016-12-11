@@ -35,6 +35,7 @@ function* unpacker(buffer,ref){
 
   return new Promise(function(resolve,reject){
     conn.open();
+    conn.until('detached').listen(reject);
     conn.on('message',onMessage,resolve,reject);
   });
 }
@@ -55,7 +56,7 @@ function* onMessage(msg,d,resolve,reject){
     case REJECT:
       reject(msg[1]);
       d.detach();
-      
+
       if(this[children]) yield this[children].is(0);
       this.detach();
       break;
