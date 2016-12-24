@@ -36,7 +36,6 @@ class Connection extends Target{
   open(){
     if(!this[end]) throw new Error('Cannot open a detached connection');
     if(this.is('locked')) throw new Error('Cannot open a locked connection');
-    if(this.is('open')) throw new Error('Connection already open');
     this[emitter].set('open');
   }
 

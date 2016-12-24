@@ -27,11 +27,6 @@ t('Connection - ' + (global.navigator ? 'browser' : 'node.js'),function*(){
       conn.send('foo');
       assert.strictEqual(msg,'foo');
 
-      try{ conn.end.open(); }
-      catch(e){ error = e; }
-      assert(!!error);
-
-      error = null;
       try{ conn.end.lock(); }
       catch(e){ error = e; }
       assert(!!error);
